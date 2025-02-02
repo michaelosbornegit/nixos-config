@@ -136,18 +136,13 @@
       homeupgrade = "sudo nix-channel --update && home-manager switch";
     };
 
-    # initExtra = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+    initExtra = "source ~/.p10k-config";
 
     plugins = [
       {
         name = "powerlevel10k";
         src = pkgs.zsh-powerlevel10k;
         file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }
-      {
-        name = "powerlevel10k-config";
-        src = ./p10k-config;
-        file = ".p10k.zsh";
       }
     ];
 
@@ -193,6 +188,8 @@
     # # the Nix store. Activating the configuration will then make '~/.screenrc' a
     # # symlink to the Nix store copy.
     # ".screenrc".source = dotfiles/screenrc;
+
+    ".p10k-config".source = dotfiles/p10k-config;
 
     # # You can also set the file content immediately.
     # ".gradle/gradle.properties".text = ''

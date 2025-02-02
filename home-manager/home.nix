@@ -78,7 +78,7 @@
       # (pkgs.writeShellScriptBin "my-hello" ''
       #   echo "Hello, ${config.home.username}!"
       # '')
-    ]
+    ];
   };
 
   # Nicely reload system units when changing configs
@@ -185,40 +185,6 @@
     enableZshIntegration = true;
     nix-direnv.enable = true;
   };
-
-  # The home.packages option allows you to install Nix packages into your
-  # environment.
-  home.packages = [
-      # packages
-      pkgs.zsh-powerlevel10k # zsh theme
-      pkgs.jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-      pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-      pkgs.wget # for wgetting
-      pkgs.esptool # for interacting with esp32 boards
-      # apps
-      pkgs.microsoft-edge
-      pkgs.discord
-      pkgs.prusa-slicer
-      pkgs.mongodb-compass
-      # games/fun
-      pkgs.prismlauncher # for minecraft for fun
-      # # Adds the 'hello' command to your environment. It prints a friendly
-      # # "Hello, world!" when run.
-      # pkgs.hello
-
-      # # It is sometimes useful to fine-tune packages, for example, by applying
-      # # overrides. You can do that directly here, just don't forget the
-      # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-      # # fonts?
-      # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-      # # You can also create simple shell scripts directly inside your
-      # # configuration. For example, this adds a command 'my-hello' to your
-      # # environment:
-      # (pkgs.writeShellScriptBin "my-hello" ''
-      #   echo "Hello, ${config.home.username}!"
-      # '')
-  ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.

@@ -165,6 +165,7 @@
       "terminal.integrated.defaultProfile.linux" = "zsh";
       "security.workspace.trust.untrustedFiles" = "open";
       "git.enableSmartCommit" = true;
+      "git.autofetch" = true;
     };
   };
 

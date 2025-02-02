@@ -28,4 +28,11 @@
   # networking.interfaces.enp1s0.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
+  # MYEDIT add bootloader, which by default is in configuration.nix, to separate system info from
+  # configuration.nix
+  # Bootloader.
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/vda";
+  boot.loader.grub.useOSProber = true;
 }

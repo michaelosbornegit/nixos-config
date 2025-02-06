@@ -26,41 +26,16 @@
     ./hardware-configuration.nix
     ../common.nix
     ../gnome.nix
-    home-manager.nixosModules.home-manager
+    inputs.home-manager.nixosModules.home-manager
     {
       home-manager.users.${user} = {
         imports = [
-          ../home-common.nix
-          ./home.nix
+          (import ../home-common.nix {inherit inputs outputs pkgs user;})
+          (import ./home.nix {inherit inputs outputs pkgs user;})
         ];
       };
     }
   ];
-
-  nixpkgs = {
-    # You can add overlays here
-    overlays = [
-      # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.unstable-packages
-
-      # You can also add overlays exported from other flakes:
-      # neovim-nightly-overlay.overlays.default
-
-      # Or define it inline, for example:
-      # (final: prev: {
-      #   hi = final.hello.overrideAttrs (oldAttrs: {
-      #     patches = [ ./change-hello-to-hi.patch ];
-      #   });
-      # })
-    ];
-    # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-    };
-  };
 
   nix = let
     flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;

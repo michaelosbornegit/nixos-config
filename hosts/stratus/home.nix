@@ -3,16 +3,10 @@
 {
   inputs,
   outputs,
-  lib,
-  config,
   pkgs,
-  home-manager
   ...
 }: {
-  home = {
-    username = "resonatortune";
-    homeDirectory = "/home/resonatortune";
-    packages = [
+  home.packages = [
       # packages
       pkgs.jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
       pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
@@ -41,7 +35,6 @@
       #   echo "Hello, ${config.home.username}!"
       # '')
     ];
-  };
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
@@ -180,9 +173,6 @@
   home.sessionVariables = {
     # EDITOR = "emacs";
   };
-
-  # Let Home Manager install and manage itself.
-  programs.home-manager.enable = true;
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "24.11";

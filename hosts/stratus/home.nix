@@ -6,54 +6,16 @@
   lib,
   config,
   pkgs,
+  home-manager
   ...
 }: {
-  # You can import other home-manager modules here
-  imports = [
-    # If you want to use modules your own flake exports (from modules/home-manager):
-    # outputs.homeManagerModules.example
-
-    # Or modules exported from other flakes (such as nix-colors):
-    # inputs.nix-colors.homeManagerModules.default
-
-    # You can also split up your configuration and import pieces of it here:
-    # ./nvim.nix
-  ];
-
-  nixpkgs = {
-    # You can add overlays here
-    overlays = [
-      # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.unstable-packages
-
-      # You can also add overlays exported from other flakes:
-      # neovim-nightly-overlay.overlays.default
-
-      # Or define it inline, for example:
-      # (final: prev: {
-      #   hi = final.hello.overrideAttrs (oldAttrs: {
-      #     patches = [ ./change-hello-to-hi.patch ];
-      #   });
-      # })
-    ];
-    # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-    };
-  };
-
   home = {
     username = "resonatortune";
     homeDirectory = "/home/resonatortune";
     packages = [
       # packages
-      pkgs.zsh-powerlevel10k # zsh theme
       pkgs.jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
       pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-      pkgs.wget # for wgetting
       pkgs.esptool # for interacting with esp32 boards
       # apps
       pkgs.microsoft-edge

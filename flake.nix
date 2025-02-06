@@ -54,13 +54,13 @@
       stratus = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs user;};
         modules = [
-          ./hosts/stratus/configuration.nix
+          ./hosts/stratus
         ];
       };
       vm = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs outputs user;};
         modules = [
-          ./hosts/vm/configuration.nix
+          ./hosts/vm
         ];
       };
     };
@@ -69,7 +69,7 @@
       darwin = nixpkgs.lib.darwinSystem {
         specialArgs = {inherit inputs outputs; user = "mosborne";};
         modules = [
-          ./hosts/darwin/configuration.nix
+          ./hosts/darwin
         ];
       };
     };

@@ -21,6 +21,7 @@
 
     # Import your generated (nixos-generate-config) hardware configuration
     ./hardware-configuration.nix
+    ../common.nix
   ];
 
   nixpkgs = {
@@ -67,9 +68,6 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  # FIXME: Add the rest of your current configuration
-
-  # TODO: Set your hostname
   networking.hostName = "vm";
 
   # TODO: Configure your system-wide user settings (groups, etc), add more users as needed.

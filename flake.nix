@@ -31,6 +31,8 @@
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
     forAllSystems = nixpkgs.lib.genAttrs systems;
+
+    user = "resonatortune";
   in {
     # Your custom packages
     # Accessible through 'nix build', 'nix shell', etc
@@ -48,19 +50,26 @@
     # These are usually stuff you would upstream into home-manager
     homeManagerModules = import ./modules/home-manager;
 
-    # NixOS configuration entrypoint
-    # Available through 'nixos-rebuild --flake .#your-hostname'
     nixosConfigurations = {
       stratus = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
+        specialArgs = {inherit inputs outputs user;};
         modules = [
           ./hosts/stratus/configuration.nix
         ];
       };
       vm = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
+        specialArgs = {inherit inputs outputs user;};
         modules = [
           ./hosts/vm/configuration.nix
+        ];
+      };
+    };
+
+    darwinConfigurations = {
+      darwin = nixpkgs.lib.darwinSystem {
+        specialArgs = {inherit inputs outputs; user = "mosborne";};
+        modules = [
+          ./hosts/darwin/configuration.nix
         ];
       };
     };

@@ -67,7 +67,10 @@
 
     darwinConfigurations = {
       darwin = nixpkgs.lib.darwinSystem {
-        specialArgs = {inherit inputs outputs; user = "mosborne";};
+        specialArgs = {
+          inherit inputs outputs;
+          user = "mosborne";
+        };
         modules = [
           ./hosts/darwin
         ];

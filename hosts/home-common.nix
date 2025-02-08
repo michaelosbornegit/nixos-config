@@ -58,6 +58,7 @@
       ms-azuretools.vscode-docker
       ms-vscode-remote.remote-ssh
       ms-vscode-remote.remote-containers
+      mechatroner.rainbow-csv
     ];
     userSettings = {
       "workbench.colorTheme" = "Default Light Modern";

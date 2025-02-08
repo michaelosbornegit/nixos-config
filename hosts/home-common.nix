@@ -7,6 +7,8 @@
   user,
   ...
 }: {
+  nixpkgs.config.allowUnfree = true;
+
   home = {
     username = "${user}";
     homeDirectory = "/home/${user}";
@@ -14,62 +16,7 @@
       # packages
       pkgs.zsh-powerlevel10k # zsh theme
       pkgs.wget # for wgetting
-      # # Adds the 'hello' command to your environment. It prints a friendly
-      # # "Hello, world!" when run.
-      # pkgs.hello
-
-      # # It is sometimes useful to fine-tune packages, for example, by applying
-      # # overrides. You can do that directly here, just don't forget the
-      # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-      # # fonts?
-      # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-      # # You can also create simple shell scripts directly inside your
-      # # configuration. For example, this adds a command 'my-hello' to your
-      # # environment:
-      # (pkgs.writeShellScriptBin "my-hello" ''
-      #   echo "Hello, ${config.home.username}!"
-      # '')
     ];
-  };
-
-  # Nicely reload system units when changing configs
-  systemd.user.startServices = "sd-switch";
-
-  # change gnome to my liking
-  dconf.settings = {
-    # IMPORTANT disable sleep, for some reason things break after sleep
-    "org/gnome/settings-daemon/plugins/power" = {
-      sleep-inactive-ac-type = "nothing";
-    };
-    # nautilus (file viewer) default to list mode
-    "org/gnome/nautilus/preferences" = {
-      default-folder-viewer = "list-view";
-    };
-    # nautilus (file viewer) default zoom to small
-    "org/gnome/nautilus/list-view" = {
-      default-zoom-level = "small";
-    };
-    "org/gnome/desktop/interface" = {
-      # hot corners (mouse in corner opens overview) is annoying
-      enable-hot-corners = false;
-      # disable animations cause fairly usually clumsy and slow, specifically smooth scroll animations
-      enable-animations = false;
-    };
-    "org/gnome/desktop/sound" = {
-      # disable annoying sounds
-      event-sounds = false;
-    };
-    "org/gnome/mutter" = {
-      # enable drag to sides of screen tiling like in windows and elsewhere
-      edge-tiling = true;
-      # Enable dynamic workspaces so I can have infinite workspaces (the default of 4 is odd)
-      dynamic-workspaces = true;
-    };
-    "org/gtk/gtk4/settings/file-chooser" = {
-      # show hidden files in file chooser
-      show-hidden = true;
-    };
   };
 
   # PROGRAMS
@@ -79,14 +26,14 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
-    shellAliases = {
-      osedit = "code /etc/nixos/configuration.nix";
-      osupdate = "sudo nixos-rebuild switch";
-      osupgrade = "sudo nixos-rebuild switch --upgrade";
-      homeedit = "code ~/.config/home-manager/home.nix";
-      homeupdate = "home-manager switch";
-      homeupgrade = "sudo nix-channel --update && home-manager switch";
-    };
+    # shellAliases = {
+    #   osedit = "code /etc/nixos/configuration.nix";
+    #   osupdate = "sudo nixos-rebuild switch";
+    #   osupgrade = "sudo nixos-rebuild switch --upgrade";
+    #   homeedit = "code ~/.config/home-manager/home.nix";
+    #   homeupdate = "home-manager switch";
+    #   homeupgrade = "sudo nix-channel --update && home-manager switch";
+    # };
 
     initExtra = "source ~/.p10k-config";
 
@@ -132,43 +79,6 @@
     enableBashIntegration = true;
     enableZshIntegration = true;
     nix-direnv.enable = true;
-  };
-
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
-  home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
-
-    ".p10k-config".source = dotfiles/p10k-config;
-
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
-  };
-
-  # Home Manager can also manage your environment variables through
-  # 'home.sessionVariables'. These will be explicitly sourced when using a
-  # shell provided by Home Manager. If you don't want to manage your shell
-  # through Home Manager then you have to manually source 'hm-session-vars.sh'
-  # located at either
-  #
-  #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  /etc/profiles/per-user/resonatortune/etc/profile.d/hm-session-vars.sh
-  #
-  home.sessionVariables = {
-    # EDITOR = "emacs";
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion

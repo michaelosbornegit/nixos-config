@@ -7,5 +7,4 @@ And inspired by [Baitinq's nixos-config](https://github.com/Baitinq/nixos-config
 
 ```
 sudo nixos-rebuild switch --flake .#stratus
-home-manager switch --flake .#resonatortune@stratus
 ```

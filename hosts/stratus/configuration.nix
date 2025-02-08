@@ -56,20 +56,18 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
+  nixpkgs.config.allowUnfree = true;
+
   networking.hostName = "stratus"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
   networking.networkmanager.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.resonatortune = {
+  users.users.${user} = {
     isNormalUser = true;
-    description = "resonatortune";
+    description = "${user}";
     extraGroups = [
       "networkmanager"
       "wheel"
@@ -90,7 +88,7 @@
   # SERVICES
   # virt-manager for virtualization
   programs.virt-manager.enable = true;
-  users.groups.libvirtd.members = ["resonatortune"];
+  users.groups.libvirtd.members = ["${user}"];
   virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
   # for windows VMs, emulated tpm support

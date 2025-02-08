@@ -53,19 +53,26 @@
   programs.vscode = {
     enable = true;
     extensions = with pkgs.vscode-extensions; [
-      bbenoist.nix
-      ms-python.python
       ms-azuretools.vscode-docker
       ms-vscode-remote.remote-ssh
       ms-vscode-remote.remote-containers
+      bbenoist.nix
+      ms-python.python
       mechatroner.rainbow-csv
+      github.vscode-pull-request-github
+      github.copilot
     ];
     userSettings = {
       "workbench.colorTheme" = "Default Light Modern";
       "terminal.integrated.defaultProfile.linux" = "zsh";
+      # trust all files
       "security.workspace.trust.untrustedFiles" = "open";
+      # commit all changes when there are no staged changes
       "git.enableSmartCommit" = true;
+      # periodically fetch
       "git.autofetch" = true;
+      # no confirm dialog when clicking sync
+      "git.confirmSync" = false;
     };
   };
 

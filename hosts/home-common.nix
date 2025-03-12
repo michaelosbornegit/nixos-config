@@ -11,7 +11,6 @@
 
   home = {
     username = "${user}";
-    homeDirectory = "/home/${user}";
     packages = [
       # packages
       pkgs.zsh-powerlevel10k # zsh theme
@@ -78,7 +77,6 @@
 
   programs.git = {
     enable = true;
-    userEmail = "resonatortune@gmail.com";
     userName = "Michael Osborne";
   };
 

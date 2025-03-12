@@ -12,12 +12,17 @@
     # Home manager
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Darwin
+    nix-darwin.url = "github:LnL7/nix-darwin/master";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
     self,
     nixpkgs,
     home-manager,
+    nix-darwin,
     ...
   } @ inputs: let
     inherit (self) outputs;
@@ -31,8 +36,6 @@
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
     forAllSystems = nixpkgs.lib.genAttrs systems;
-
-    user = "resonatortune";
   in {
     # Your custom packages
     # Accessible through 'nix build', 'nix shell', etc
@@ -52,27 +55,34 @@
 
     nixosConfigurations = {
       stratus = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs user;};
+        specialArgs = {
+          inherit inputs outputs;
+            user = "resonatortune";
+    stateVersion = "24.11";};
         modules = [
           ./hosts/stratus/configuration.nix
         ];
       };
       vm = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs user;};
+        specialArgs = {
+          inherit inputs outputs;
+        user = "resonatortune";
+    stateVersion = "24.11";};
         modules = [
-          ./hosts/vm
+          ./hosts/vm/configuration.nix
         ];
       };
     };
 
     darwinConfigurations = {
-      darwin = nixpkgs.lib.darwinSystem {
+      darwin = nix-darwin.lib.darwinSystem {
         specialArgs = {
           inherit inputs outputs;
           user = "mosborne";
+          stateVersion = 6;
         };
         modules = [
-          ./hosts/darwin
+          ./hosts/darwin/configuration.nix
         ];
       };
     };

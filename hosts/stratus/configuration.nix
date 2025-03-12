@@ -8,6 +8,7 @@
   pkgs,
   home-manager,
   user,
+  stateVersion,
   ...
 }: {
   # You can import other NixOS modules here
@@ -31,8 +32,8 @@
       home-manager.users.${user} = {
         imports = [
           (import ../home-common.nix {inherit inputs outputs pkgs user;})
-          (import ./home.nix {inherit inputs outputs pkgs user;})
-          (import ../gnome-home-conf.nix {inherit inputs outputs pkgs user;})
+          (import ./home.nix {inherit inputs outputs pkgs;})
+          (import ../gnome-home-conf.nix {inherit inputs outputs pkgs;})
         ];
       };
     }

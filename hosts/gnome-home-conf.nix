@@ -1,7 +1,6 @@
 {
   inputs,
   outputs,
-  user,
   ...
 }: {
   # change gnome to my liking

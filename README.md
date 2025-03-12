@@ -9,6 +9,10 @@ And inspired by [Baitinq's nixos-config](https://github.com/Baitinq/nixos-config
 // switch
 sudo nixos-rebuild switch --flake .#stratus
 
+sudo nixos-rebuild switch --flake .#vm
+
+sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin
+
 // update
 nix flake update
 

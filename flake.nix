@@ -57,8 +57,9 @@
       stratus = nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit inputs outputs;
-            user = "resonatortune";
-    stateVersion = "24.11";};
+          user = "resonatortune";
+          stateVersion = "24.11";
+        };
         modules = [
           ./hosts/stratus/configuration.nix
         ];
@@ -66,8 +67,9 @@
       vm = nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit inputs outputs;
-        user = "resonatortune";
-    stateVersion = "24.11";};
+          user = "resonatortune";
+          stateVersion = "24.11";
+        };
         modules = [
           ./hosts/vm/configuration.nix
         ];

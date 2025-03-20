@@ -26,7 +26,7 @@
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
-  programs.vscode.extensions = pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+  programs.vscode.profiles.default.extensions = pkgs.vscode-utils.extensionsFromVscodeMarketplace [
     # MicroPico extension for esp32/pico w dev
     {
       name = "pico-w-go";

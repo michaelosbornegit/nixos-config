@@ -1,4 +1,12 @@
-{self, inputs, outputs, pkgs, user, stateVersion, ...}: {
+{
+  self,
+  inputs,
+  outputs,
+  pkgs,
+  user,
+  stateVersion,
+  ...
+}: {
   imports = [
     ../common.nix
     inputs.home-manager.darwinModules.home-manager
@@ -13,8 +21,6 @@
   ];
 
   users.users."${user}".home = "/Users/${user}";
-
-  services.nix-daemon.enable = true;
 
   nixpkgs = {
     # You can add overlays here

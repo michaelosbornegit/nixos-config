@@ -22,5 +22,6 @@
     pkgs.claude-code
     pkgs.awscli2
     pkgs.postman
+    pkgs.scrcpy
   ];
 }

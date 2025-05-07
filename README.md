@@ -11,6 +11,8 @@ sudo nixos-rebuild switch --flake .#stratus
 
 sudo nixos-rebuild switch --flake .#vm
 
+sudo nixos-rebuild switch --flake .#corp
+
 sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin
 
 // update

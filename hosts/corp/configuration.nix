@@ -79,7 +79,7 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  networking.hostName = "vm";
+  networking.hostName = "nixos";
 
   users.users.${user} = {
     isNormalUser = true;

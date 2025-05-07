@@ -74,6 +74,16 @@
           ./hosts/vm/configuration.nix
         ];
       };
+      corp = nixpkgs.lib.nixosSystem {
+        specialArgs = {
+          inherit inputs outputs;
+          user = "mosborne";
+          stateVersion = "24.11";
+        };
+        modules = [
+          ./hosts/corp/configuration.nix
+        ];
+      };
     };
 
     darwinConfigurations = {

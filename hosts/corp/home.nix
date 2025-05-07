@@ -24,8 +24,8 @@
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
-  # personal email
-  programs.git.userEmail = "resonatortune@gmail.com";
+  # work email
+  programs.git.userEmail = "mosborne@westmonroe.com";
 
   home.file = {
     ".p10k-config".source = ../../dotfiles/p10k-config;

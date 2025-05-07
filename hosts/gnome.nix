@@ -26,6 +26,8 @@
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
 
+  services.xserver.displayManager.gdm.autoSuspend = false;
+
   # MYEDIT Remove GNOME bloat, from https://nixos.wiki/wiki/GNOME
   environment.gnome.excludePackages = with pkgs; [
     atomix # puzzle game
@@ -105,11 +107,12 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # Enable automatic login for the user.
-  services.displayManager.autoLogin.enable = true;
-  services.displayManager.autoLogin.user = "${user}";
+  # Disables automatic login for the user.
+  services.displayManager.autoLogin.enable = false;
+  # flip the above to true and uncomment this to auto login
+  # services.displayManager.autoLogin.user = "${user}";
 
-  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
+  # # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  # systemd.services."getty@tty1".enable = false;
+  # systemd.services."autovt@tty1".enable = false;
 }

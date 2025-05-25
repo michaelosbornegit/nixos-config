@@ -23,5 +23,7 @@
     pkgs.awscli2
     pkgs.postman
     pkgs.scrcpy
+    pkgs.code-cursor
+    pkgs.windsurf
   ];
 }

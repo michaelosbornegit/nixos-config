@@ -15,12 +15,15 @@
     pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
     pkgs.esptool # for interacting with esp32 boards
     # apps
-    pkgs.microsoft-edge
+    pkgs.stable.microsoft-edge
     pkgs.discord
     pkgs.prusa-slicer
     pkgs.mongodb-compass
+    pkgs.code-cursor
+    pkgs.windsurf
     # games/fun
     pkgs.prismlauncher # for minecraft for fun
+    pkgs.parsec-bin
   ];
 
   # Nicely reload system units when changing configs
@@ -40,6 +43,6 @@
   programs.git.userEmail = "resonatortune@gmail.com";
 
   home.file = {
-    ".p10k-config".source = ../../dotfiles/p10k-config;
+    ".p10k-config".source = ../../dotfiles/.p10k-config;
   };
 }

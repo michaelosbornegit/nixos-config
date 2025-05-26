@@ -92,22 +92,21 @@
 
   # guest agent
   services.qemuGuest.enable = true;
-  services.spice-vdagentd.enable = true;  # enable copy and paste between host and guest
+  services.spice-vdagentd.enable = true; # enable copy and paste between host and guest
 
   # remote desktop
   services.gnome.gnome-remote-desktop.enable = true;
-  
+
   services.xrdp.enable = true;
   services.xrdp.openFirewall = true;
   services.xrdp.defaultWindowManager = "gnome-session";
-  
+
   # Add gnome-remote-desktop to system packages
   environment.systemPackages = with pkgs; [
     gnome-remote-desktop
     gnome-session
     xrdp
   ];
-
 
   # Disable the GNOME3/GDM auto-suspend feature that cannot be disabled in GUI!
   # If no user is logged in, the machine will power down after 20 minutes.

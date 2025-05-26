@@ -28,6 +28,6 @@
   programs.git.userEmail = "mosborne@westmonroe.com";
 
   home.file = {
-    ".p10k-config".source = ../../dotfiles/p10k-config;
+    ".p10k-config".source = ../../dotfiles/.p10k-config;
   };
 }

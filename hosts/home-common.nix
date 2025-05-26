@@ -34,7 +34,7 @@
     #   homeupgrade = "sudo nix-channel --update && home-manager switch";
     # };
 
-    initExtra = "source ~/.p10k-config";
+    initContent = "source ~/.p10k-config";
 
     plugins = [
       {

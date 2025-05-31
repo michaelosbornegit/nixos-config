@@ -73,6 +73,8 @@
         "git.autofetch" = true;
         # no confirm dialog when clicking sync
         "git.confirmSync" = false;
+        # format on save if possible
+        "editor.formatOnSave" = true;
       };
     };
   };

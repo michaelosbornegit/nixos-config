@@ -15,7 +15,7 @@
     pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
     pkgs.esptool # for interacting with esp32 boards
     # apps
-    pkgs.stable.microsoft-edge
+    pkgs.microsoft-edge
     pkgs.discord
     pkgs.prusa-slicer
     pkgs.mongodb-compass

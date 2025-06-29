@@ -25,5 +25,6 @@
     pkgs.scrcpy
     pkgs.code-cursor
     pkgs.windsurf
+    pkgs.warp-terminal
   ];
 }

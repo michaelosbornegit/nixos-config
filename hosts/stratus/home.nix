@@ -21,6 +21,7 @@
     pkgs.mongodb-compass
     pkgs.code-cursor
     pkgs.windsurf
+    pkgs.appimage-run
     pkgs.warp-terminal
     # games/fun
     pkgs.prismlauncher # for minecraft for fun

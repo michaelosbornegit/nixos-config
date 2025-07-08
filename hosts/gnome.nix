@@ -107,12 +107,12 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # Disables automatic login for the user.
-  services.displayManager.autoLogin.enable = false;
+  # Enables automatic login for the user.
+  services.displayManager.autoLogin.enable = true;
   # flip the above to true and uncomment this to auto login
-  # services.displayManager.autoLogin.user = "${user}";
+  services.displayManager.autoLogin.user = "${user}";
 
-  # # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
-  # systemd.services."getty@tty1".enable = false;
-  # systemd.services."autovt@tty1".enable = false;
+  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
 }

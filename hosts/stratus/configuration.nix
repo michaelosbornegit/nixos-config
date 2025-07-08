@@ -163,6 +163,9 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
+  # xbox one controller support
+  hardware.xone.enable = true;
+
   # steam for gaming
   programs.steam = {
     enable = true;

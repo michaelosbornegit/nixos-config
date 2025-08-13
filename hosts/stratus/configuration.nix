@@ -181,11 +181,13 @@
   services.xrdp.openFirewall = true;
   services.xrdp.defaultWindowManager = "gnome-session";
 
-  # Add gnome-remote-desktop to system packages
   environment.systemPackages = with pkgs; [
+    # Add gnome-remote-desktop to system packages
     gnome-remote-desktop
     gnome-session
     xrdp
+    # kdiskmark for disk benchmarking
+    kdiskmark
   ];
 
   # Disable the GNOME3/GDM auto-suspend feature that cannot be disabled in GUI!

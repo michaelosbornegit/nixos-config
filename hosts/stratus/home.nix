@@ -26,6 +26,8 @@
     # games/fun
     pkgs.prismlauncher # for minecraft for fun
     pkgs.parsec-bin
+    # pkgs.ollama-cuda # takes forever to install, so not included in normal builds
+    pkgs.vlc
   ];
 
   # Nicely reload system units when changing configs

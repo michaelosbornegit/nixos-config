@@ -12,7 +12,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Set your time zone.
-  time.timeZone = "America/Los_Angeles";
+  time.timeZone = "America/Chicago";
 
   # # List packages installed in system profile. To search, run:
   # # $ nix search wget

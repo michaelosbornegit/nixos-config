@@ -7,7 +7,9 @@
   # overwrite some things for darwin
   home.homeDirectory = "/Users/${user}";
   # work email
-  programs.git.userEmail = "mosborne@wblankmetal.ai";
+  programs.git.userEmail = "mosborne@blankmetal.ai";
+
+  programs.firefox.enable = true;
 
   home.file = {
     ".p10k-config".source = ../../dotfiles/.p10k-config;
@@ -23,5 +25,7 @@
     pkgs.code-cursor
     pkgs.windsurf
     pkgs.warp-terminal
+    pkgs.coreutils-prefixed
+    pkgs.notion-app
   ];
 }

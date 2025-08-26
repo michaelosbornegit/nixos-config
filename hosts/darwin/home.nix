@@ -17,15 +17,20 @@
 
   home.packages = [
     # pkgs.microsoft-edge If this is ever available for arm64 darwin
+    # productivity
     pkgs.slack
-    pkgs.claude-code
-    pkgs.awscli2
-    pkgs.postman
+    pkgs.notion-app
+
+    # utilities
+    pkgs.coreutils-prefixed
     pkgs.scrcpy
+    pkgs.awscli2
+    pkgs.claude-code
+    
+    # apps
+    pkgs.postman
     pkgs.code-cursor
     pkgs.windsurf
     pkgs.warp-terminal
-    pkgs.coreutils-prefixed
-    pkgs.notion-app
   ];
 }

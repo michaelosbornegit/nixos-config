@@ -75,6 +75,9 @@
         "git.confirmSync" = false;
         # format on save if possible
         "editor.formatOnSave" = true;
+        # copilot settings
+        "chat.agent.maxRequests" = 100;
+        "chat.tools.autoApprove" = true;
       };
     };
   };

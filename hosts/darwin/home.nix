@@ -26,6 +26,7 @@
     pkgs.scrcpy
     pkgs.awscli2
     pkgs.claude-code
+    pkgs.nodejs
     
     # apps
     pkgs.postman

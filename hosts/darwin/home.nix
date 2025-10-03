@@ -33,5 +33,6 @@
     pkgs.code-cursor
     pkgs.windsurf
     pkgs.warp-terminal
+    pkgs.codex
   ];
 }

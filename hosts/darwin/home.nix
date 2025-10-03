@@ -16,7 +16,7 @@
   };
 
   home.packages = [
-    # pkgs.microsoft-edge If this is ever available for arm64 darwin
+    # pkgs.microsoft-edge If this is ever available for aarch64 darwin
     # productivity
     pkgs.slack
     pkgs.notion-app
@@ -27,6 +27,7 @@
     pkgs.awscli2
     pkgs.claude-code
     pkgs.nodejs
+    pkgs.ghostty-bin
     
     # apps
     pkgs.postman

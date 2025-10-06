@@ -28,7 +28,7 @@
     pkgs.claude-code
     pkgs.nodejs
     pkgs.ghostty-bin
-    
+
     # apps
     pkgs.postman
     pkgs.code-cursor

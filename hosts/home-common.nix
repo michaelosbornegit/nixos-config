@@ -78,6 +78,12 @@
         # copilot settings
         "chat.agent.maxRequests" = 100;
         "chat.tools.autoApprove" = true;
+        "mssql.connectionGroups" = [
+          {
+            "name" = "ROOT";
+            "id" = "A6A67991-18BC-4473-9A4E-0BFB0B2F0F19";
+          }
+        ];
       };
     };
   };

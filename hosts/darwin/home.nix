@@ -9,7 +9,8 @@
   # work email
   programs.git.userEmail = "mosborne@blankmetal.ai";
 
-  programs.firefox.enable = true;
+  # Erroring and usually unneeded, will install separately if needed
+  # programs.firefox.enable = true;
 
   home.file = {
     ".p10k-config".source = ../../dotfiles/.p10k-config;

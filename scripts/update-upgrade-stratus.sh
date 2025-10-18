@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # This script is used to update and upgrade the Stratus system.
+# if on a clean install you will need to append --extra-experimental-features nix-command --extra-experimental-features flakes
+# NOTE MAKE SURE TO UPDATE hardware-configuration.nix ON A FRESH INSTALL
 
 # For sudo 
 sudo echo hi

@@ -18,9 +18,9 @@
     pkgs.microsoft-edge
     pkgs.discord
     pkgs.prusa-slicer
-    pkgs.mongodb-compass
-    pkgs.code-cursor
-    pkgs.windsurf
+    # pkgs.mongodb-compass
+    # pkgs.code-cursor
+    # pkgs.windsurf
     pkgs.appimage-run
     pkgs.warp-terminal
     # games/fun

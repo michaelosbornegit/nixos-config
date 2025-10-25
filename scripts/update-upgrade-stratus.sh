@@ -16,6 +16,8 @@ sudo nixos-rebuild switch --flake .#stratus
 
 # Delete old generations and optimize the store
 sudo nix-collect-garbage -d
-sudo nix-store --optimize
+
+# only needed occasionally to save space
+# sudo nix-store --optimize
 
 sudo reboot

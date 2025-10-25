@@ -84,7 +84,7 @@
 
   programs.git = {
     enable = true;
-    userName = "Michael Osborne";
+    settings.user.name = "Michael Osborne";
   };
 
   programs.direnv = {

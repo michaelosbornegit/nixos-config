@@ -25,7 +25,7 @@
   systemd.user.startServices = "sd-switch";
 
   # personal email
-  programs.git.userEmail = "resonatortune@gmail.com";
+  programs.git.settings.user.email = "resonatortune@gmail.com";
 
   home.file = {
     ".p10k-config".source = ../../dotfiles/.p10k-config;

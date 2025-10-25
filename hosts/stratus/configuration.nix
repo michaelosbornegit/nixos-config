@@ -28,13 +28,17 @@
     ../common.nix
     ../gnome.nix
     inputs.home-manager.nixosModules.home-manager
+    inputs.slippi.nixosModules.default
     {
-      home-manager.users.${user} = {
-        imports = [
-          (import ../home-common.nix {inherit inputs outputs pkgs user;})
-          (import ./home.nix {inherit inputs outputs pkgs user;})
-          (import ../gnome-home-conf.nix {inherit inputs outputs pkgs;})
-        ];
+      home-manager = {
+        backupFileExtension = "hm-bak";
+        users.${user} = {
+          imports = [
+            (import ../home-common.nix {inherit inputs outputs pkgs user;})
+            (import ./home.nix {inherit inputs outputs pkgs user;})
+            (import ../gnome-home-conf.nix {inherit inputs outputs pkgs;})
+          ];
+        };
       };
     }
   ];

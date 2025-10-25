@@ -25,7 +25,7 @@
   systemd.user.startServices = "sd-switch";
 
   # work email
-  programs.git.userEmail = "mosborne@westmonroe.com";
+  programs.git.settings.user.email = "mosborne@westmonroe.com";
 
   home.file = {
     ".p10k-config".source = ../../dotfiles/.p10k-config;

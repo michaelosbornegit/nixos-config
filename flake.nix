@@ -10,6 +10,9 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
     # Also see the 'unstable-packages' overlay at 'overlays/default.nix'.
 
+    slippi.url = "github:lytedev/slippi-nix";
+    slippi.inputs.nixpkgs.follows = "nixpkgs";
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -23,6 +26,7 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
+    slippi,
     home-manager,
     nix-darwin,
     ...

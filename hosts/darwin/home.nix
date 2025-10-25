@@ -7,7 +7,7 @@
   # overwrite some things for darwin
   home.homeDirectory = "/Users/${user}";
   # work email
-  programs.git.userEmail = "mosborne@blankmetal.ai";
+  programs.git.settings.user.email = "mosborne@blankmetal.ai";
 
   # Erroring and usually unneeded, will install separately if needed
   # programs.firefox.enable = true;

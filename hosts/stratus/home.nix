@@ -7,6 +7,14 @@
   user,
   ...
 }: {
+  imports = [
+    inputs.slippi.homeManagerModules.default
+    {
+      # Point the launcher at your local Melee ISO; adjust if stored elsewhere.
+      slippi-launcher.isoPath = "/home/${user}/Documents/Super Smash Bros. Melee (v1.02).iso";
+    }
+  ];
+
   home.homeDirectory = "/home/${user}";
 
   home.packages = [
@@ -23,6 +31,7 @@
     # pkgs.windsurf
     pkgs.appimage-run
     pkgs.warp-terminal
+    pkgs.spotify
     # games/fun
     pkgs.prismlauncher # for minecraft for fun
     pkgs.parsec-bin
@@ -44,12 +53,16 @@
   ];
 
   # personal email
-  programs.git.userEmail = "resonatortune@gmail.com";
+  programs.git.settings.user.email = "resonatortune@gmail.com";
 
   home.file = {
     ".p10k-config".source = ../../dotfiles/.p10k-config;
 
     ".config/mimeapps.list".source = ../../dotfiles/.config/mimeapps.list;
     ".config/mimeapps.list".force = true;
+  };
+
+  programs.zsh.shellAliases = {
+    melee = "nix run github:lytedev/slippi-nix#slippi-launcher";
   };
 }

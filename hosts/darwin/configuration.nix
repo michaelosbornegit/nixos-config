@@ -5,6 +5,7 @@
   pkgs,
   user,
   stateVersion,
+  homeStateVersion,
   ...
 }: {
   imports = [
@@ -13,7 +14,7 @@
     {
       home-manager.users.${user} = {
         imports = [
-          (import ../home-common.nix {inherit inputs outputs pkgs user stateVersion;})
+          (import ../home-common.nix {inherit inputs outputs pkgs user; stateVersion = homeStateVersion;})
           (import ./home.nix {inherit inputs outputs pkgs user;})
         ];
       };
@@ -65,4 +66,7 @@
 
   # The platform the configuration will be used on.
   nixpkgs.hostPlatform = "aarch64-darwin";
+
+  # Set the nix-darwin system state version
+  system.stateVersion = stateVersion;
 }

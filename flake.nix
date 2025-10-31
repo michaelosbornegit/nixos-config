@@ -97,7 +97,8 @@
         specialArgs = {
           inherit inputs outputs;
           user = "mosborne";
-          stateVersion = 6;
+          stateVersion = 6; 
+          homeStateVersion = "25.05"; 
         };
         modules = [
           ./hosts/darwin/configuration.nix

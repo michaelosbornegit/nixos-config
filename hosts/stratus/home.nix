@@ -64,5 +64,9 @@
 
   programs.zsh.shellAliases = {
     melee = "nix run github:lytedev/slippi-nix#slippi-launcher";
+    roblox = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
+              flatpak install flathub org.vinegarhq.Sober && \
+              flatpak update && \
+              flatpak run org.vinegarhq.Sober";
   };
 }

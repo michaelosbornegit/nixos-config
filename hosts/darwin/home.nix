@@ -18,16 +18,10 @@
 
   home.packages = [
     # pkgs.microsoft-edge If this is ever available for aarch64 darwin
-    # productivity
-    pkgs.slack
-    pkgs.notion-app
 
     # utilities
     pkgs.coreutils-prefixed
     pkgs.scrcpy
-    pkgs.awscli2
-    pkgs.claude-code
-    pkgs.ghostty-bin
 
     # apps
     pkgs.postman
@@ -35,5 +29,8 @@
     pkgs.windsurf
     pkgs.warp-terminal
     pkgs.codex
+    pkgs.ghostty-bin
+    pkgs.claude-code
+    pkgs.raycast
   ];
 }

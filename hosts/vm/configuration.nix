@@ -6,6 +6,7 @@
   config,
   user,
   pkgs,
+  stateVersion,
   ...
 }: {
   # You can import other NixOS modules here
@@ -28,7 +29,7 @@
     {
       home-manager.users.${user} = {
         imports = [
-          (import ../home-common.nix {inherit inputs outputs pkgs user;})
+          (import ../home-common.nix {inherit inputs outputs pkgs user stateVersion;})
           (import ./home.nix {inherit inputs outputs pkgs user;})
           (import ../gnome-home-conf.nix {inherit inputs outputs pkgs user;})
         ];
@@ -97,5 +98,5 @@
   services.spice-vdagentd.enable = true; # enable copy and paste between host and guest
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = "25.05";
+  system.stateVersion = stateVersion;
 }

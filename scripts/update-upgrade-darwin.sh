@@ -12,6 +12,8 @@ nix flake update
 sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin
 
 sudo nix-collect-garbage -d
-sudo nix-store --optimize
+
+# only needed occasionally to save space
+# sudo nix-store --optimize
 
 sudo reboot

@@ -63,11 +63,23 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
+    shellAliases = {
+      osupdate = "nix flake update";
+      osupgrade =
+        if pkgs.stdenv.isDarwin
+        then "sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin"
+        else "sudo nixos-rebuild switch --flake .#$(hostname)";
+    };
+
     # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)
     # This ensures the zsh-fzf-history-search plugin uses our custom up arrow binding instead of ^r
     initContent = lib.mkMerge [
       (lib.mkOrder 550 ''
-        ZSH_FZF_HISTORY_SEARCH_BIND='^[[A'
+        if [[ -n ''${terminfo[kcuu1]} ]]; then
+          ZSH_FZF_HISTORY_SEARCH_BIND=''${terminfo[kcuu1]}
+        else
+          ZSH_FZF_HISTORY_SEARCH_BIND=$'\e[A'
+        fi
       '')
       ''
         source ~/.p10k-config

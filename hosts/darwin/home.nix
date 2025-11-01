@@ -12,10 +12,6 @@
   # Erroring and usually unneeded, will install separately if needed
   # programs.firefox.enable = true;
 
-  home.file = {
-    ".p10k-config".source = ../../dotfiles/.p10k-config;
-  };
-
   home.packages = [
     # pkgs.microsoft-edge If this is ever available for aarch64 darwin
 

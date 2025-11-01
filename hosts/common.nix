@@ -23,6 +23,10 @@
   # Enable zsh
   programs.zsh.enable = true;
 
+  fonts.packages = with pkgs; [
+    meslo-lgs-nf
+  ];
+
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = stateVersion;
 }

@@ -15,7 +15,10 @@
     {
       home-manager.users.${user} = {
         imports = [
-          (import ../home-common.nix {inherit inputs outputs lib pkgs user; stateVersion = homeStateVersion;})
+          (import ../home-common.nix {
+            inherit inputs outputs lib pkgs user;
+            stateVersion = homeStateVersion;
+          })
           (import ./home.nix {inherit inputs outputs pkgs user;})
         ];
       };

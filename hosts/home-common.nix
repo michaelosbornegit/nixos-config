@@ -3,6 +3,7 @@
 {
   inputs,
   outputs,
+  lib,
   pkgs,
   user,
   stateVersion,
@@ -13,29 +14,62 @@
   home = {
     username = "${user}";
     packages = [
-      # packages
       pkgs.zsh-powerlevel10k # zsh theme
+      pkgs.zsh-forgit # zsh forgit integration
+      pkgs.zsh-fzf-tab # zsh fzf tab completion
+      pkgs.ripgrep-all # for searching
+      pkgs.fd # for file finding
+      pkgs.bat # for file previewing
       pkgs.wget # for wgetting
+      # Open Search and open files by contents in VSCode
+      (pkgs.writeShellApplication { 
+        name = "textsearch";
+        runtimeInputs = [ pkgs.ripgrep-all pkgs.fzf pkgs.bat pkgs.vscode ];
+        text = ''
+          RG_PREFIX="rga --column --line-number --no-heading --color=always --smart-case"
+          INITIAL_QUERY="''${*:-}"
+          fzf --ansi --disabled --query "$INITIAL_QUERY" \
+              --bind "start:reload:$RG_PREFIX {q}" \
+              --bind "change:reload:sleep 0.1; $RG_PREFIX {q} || true" \
+              --delimiter : \
+              --preview 'bat --color=always {1} --highlight-line {2}' \
+              --preview-window 'right,50%,border-left,+{2}+3/3,~3' \
+              --bind 'enter:become(code --goto {1}:{2})'
+        '';
+      })
+      # Search and open files by name in VSCode
+      (pkgs.writeShellApplication {
+        name = "filesearch";
+        runtimeInputs = [ pkgs.fd pkgs.fzf pkgs.vscode ];
+        text = ''
+          result=$(fd "$@" | fzf)
+          if [ -n "$result" ]; then
+            code "$result"
+          fi
+        '';
+      })
     ];
   };
 
   # PROGRAMS
   programs.zsh = {
     enable = true;
-    enableCompletion = true;
+    # enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
-    # shellAliases = {
-    #   osedit = "code /etc/nixos/configuration.nix";
-    #   osupdate = "sudo nixos-rebuild switch";
-    #   osupgrade = "sudo nixos-rebuild switch --upgrade";
-    #   homeedit = "code ~/.config/home-manager/home.nix";
-    #   homeupdate = "home-manager switch";
-    #   homeupgrade = "sudo nix-channel --update && home-manager switch";
-    # };
-
-    initContent = "source ~/.p10k-config";
+    # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)
+    # This ensures the zsh-fzf-history-search plugin uses our custom up arrow binding instead of ^r
+    initContent = lib.mkMerge [
+      (lib.mkOrder 550 ''
+        ZSH_FZF_HISTORY_SEARCH_BIND='^[[A'
+      '')
+      ''
+        source ~/.p10k-config
+        source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.zsh
+        source ${pkgs.zsh-forgit}/share/zsh/zsh-forgit/forgit.plugin.zsh
+      ''
+    ];
 
     plugins = [
       {
@@ -45,9 +79,25 @@
       }
     ];
 
-    # to fix autocomplete in NixOS, from https://nixos.wiki/wiki/Zsh
-    # turns out to maybe not be needed
-    # initExtra = "bindkey "''${key[Up]}" up-line-or-search";
+    zplug = {
+      enable = true;
+      plugins = [
+        { name = "joshskidmore/zsh-fzf-history-search"; }
+      ];
+    };
+  };
+
+  programs.fzf.enable = true;
+
+  programs.zoxide = {
+    enable = true;
+    options = [ "--cmd cd" ];
+  };
+
+  programs.eza = {
+    enable = true;
+    colors = "always";
+    icons = "auto";
   };
 
   programs.vscode = {

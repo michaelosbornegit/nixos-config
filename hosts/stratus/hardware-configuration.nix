@@ -22,11 +22,11 @@
     fsType = "ext4";
   };
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/A246-783E";
-      fsType = "vfat";
-      options = [ "fmask=0077" "dmask=0077" ];
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/A246-783E";
+    fsType = "vfat";
+    options = ["fmask=0077" "dmask=0077"];
+  };
 
   swapDevices = [];
 

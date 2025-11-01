@@ -56,8 +56,6 @@
   programs.git.settings.user.email = "resonatortune@gmail.com";
 
   home.file = {
-    ".p10k-config".source = ../../dotfiles/.p10k-config;
-
     ".config/mimeapps.list".source = ../../dotfiles/.config/mimeapps.list;
     ".config/mimeapps.list".force = true;
   };

@@ -13,6 +13,11 @@
 
   home = {
     username = "${user}";
+
+    file = {
+      ".p10k-config".source = ../dotfiles/.p10k-config;
+    };
+
     packages = [
       pkgs.zsh-powerlevel10k # zsh theme
       pkgs.zsh-forgit # zsh forgit integration
@@ -22,9 +27,9 @@
       pkgs.bat # for file previewing
       pkgs.wget # for wgetting
       # Open Search and open files by contents in VSCode
-      (pkgs.writeShellApplication { 
+      (pkgs.writeShellApplication {
         name = "textsearch";
-        runtimeInputs = [ pkgs.ripgrep-all pkgs.fzf pkgs.bat pkgs.vscode ];
+        runtimeInputs = [pkgs.ripgrep-all pkgs.fzf pkgs.bat pkgs.vscode];
         text = ''
           RG_PREFIX="rga --column --line-number --no-heading --color=always --smart-case"
           INITIAL_QUERY="''${*:-}"
@@ -40,7 +45,7 @@
       # Search and open files by name in VSCode
       (pkgs.writeShellApplication {
         name = "filesearch";
-        runtimeInputs = [ pkgs.fd pkgs.fzf pkgs.vscode ];
+        runtimeInputs = [pkgs.fd pkgs.fzf pkgs.vscode];
         text = ''
           result=$(fd "$@" | fzf)
           if [ -n "$result" ]; then
@@ -82,7 +87,7 @@
     zplug = {
       enable = true;
       plugins = [
-        { name = "joshskidmore/zsh-fzf-history-search"; }
+        {name = "joshskidmore/zsh-fzf-history-search";}
       ];
     };
   };
@@ -91,7 +96,7 @@
 
   programs.zoxide = {
     enable = true;
-    options = [ "--cmd cd" ];
+    options = ["--cmd cd"];
   };
 
   programs.eza = {
@@ -116,6 +121,7 @@
       userSettings = {
         "workbench.colorTheme" = "Default Light Modern";
         "terminal.integrated.defaultProfile.linux" = "zsh";
+        "terminal.integrated.fontFamily" = "MesloLGS NF";
         # trust all files
         "security.workspace.trust.untrustedFiles" = "open";
         # commit all changes when there are no staged changes

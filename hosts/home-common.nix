@@ -74,14 +74,19 @@
     # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)
     # This ensures the zsh-fzf-history-search plugin uses our custom up arrow binding instead of ^r
     initContent = lib.mkMerge [
-      (lib.mkOrder 550 ''
-        if [[ -n ''${terminfo[kcuu1]} ]]; then
-          ZSH_FZF_HISTORY_SEARCH_BIND=''${terminfo[kcuu1]}
-        else
-          ZSH_FZF_HISTORY_SEARCH_BIND=$'\e[A'
-        fi
-      '')
+      (lib.mkOrder 550 (
+        if pkgs.stdenv.isDarwin
+        then "ZSH_FZF_HISTORY_SEARCH_BIND='^[[A'"
+        else ''
+          if [[ -n ''${terminfo[kcuu1]} ]]; then
+            ZSH_FZF_HISTORY_SEARCH_BIND=''${terminfo[kcuu1]}
+          else
+            ZSH_FZF_HISTORY_SEARCH_BIND=$'\e[A'
+          fi
+        ''
+      ))
       ''
+        ZSH_FZF_HISTORY_SEARCH_END_OF_LINE='true'
         source ~/.p10k-config
         source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.zsh
         source ${pkgs.zsh-forgit}/share/zsh/zsh-forgit/forgit.plugin.zsh

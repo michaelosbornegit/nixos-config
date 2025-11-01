@@ -47,7 +47,8 @@
         name = "filesearch";
         runtimeInputs = [pkgs.fd pkgs.fzf pkgs.vscode];
         text = ''
-          result=$(fd "$@" | fzf)
+          INITIAL_QUERY="''${*:-}"
+          result=$(fd | fzf --query "$INITIAL_QUERY")
           if [ -n "$result" ]; then
             code "$result"
           fi
@@ -64,11 +65,13 @@
     syntaxHighlighting.enable = true;
 
     shellAliases = {
-      osupdate = "nix flake update";
+      osupdate = "(cd ~/development/repos/nixos-config && git pull && nix flake update)";
       osupgrade =
         if pkgs.stdenv.isDarwin
-        then "sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin"
-        else "sudo nixos-rebuild switch --flake .#$(hostname)";
+        then "(cd ~/development/repos/nixos-config && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
+        else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
+      osclean = "sudo nix-collect-garbage -d";
+      osoptimize = "sudo nix-store --optimize";
     };
 
     # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)

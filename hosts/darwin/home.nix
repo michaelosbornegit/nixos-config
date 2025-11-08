@@ -18,15 +18,16 @@
     # utilities
     pkgs.coreutils-prefixed
     pkgs.scrcpy
+    pkgs.raycast
+    pkgs.loopwm
 
     # apps
     pkgs.postman
     pkgs.code-cursor
-    pkgs.windsurf
+    # pkgs.windsurf
     pkgs.warp-terminal
     pkgs.codex
     pkgs.ghostty-bin
     pkgs.claude-code
-    pkgs.raycast
   ];
 }

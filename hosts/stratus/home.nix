@@ -25,7 +25,7 @@
     # apps
     pkgs.microsoft-edge
     pkgs.discord
-    pkgs.prusa-slicer
+    # pkgs.prusa-slicer
     # pkgs.mongodb-compass
     # pkgs.code-cursor
     # pkgs.windsurf

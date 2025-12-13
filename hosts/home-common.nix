@@ -72,6 +72,8 @@
         else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
       osclean = "sudo nix-collect-garbage -d";
       osoptimize = "sudo nix-store --optimize";
+      codex = "npx @openai/codex";
+      claude = "npx @anthropic-ai/claude-code";
     };
 
     # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)

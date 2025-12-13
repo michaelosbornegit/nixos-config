@@ -20,14 +20,16 @@
     pkgs.scrcpy
     pkgs.raycast
     pkgs.loopwm
+    pkgs.nodejs
 
     # apps
     pkgs.postman
     pkgs.code-cursor
+    # pkgs.warp-terminal
     # pkgs.windsurf
-    pkgs.warp-terminal
-    pkgs.codex
     pkgs.ghostty-bin
-    pkgs.claude-code
+    # use these through npm
+    # pkgs.codex
+    # pkgs.claude-code
   ];
 }

@@ -212,6 +212,9 @@
     xrdp
     # kdiskmark for disk benchmarking
     kdiskmark
+    (retroarch.withCores (cores: with cores; [
+      snes9x
+    ]))
   ];
 
   # Disable the GNOME3/GDM auto-suspend feature that cannot be disabled in GUI!

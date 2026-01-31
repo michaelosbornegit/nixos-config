@@ -18,18 +18,19 @@
       ".p10k-config".source = ../dotfiles/.p10k-config;
     };
 
-    packages = [
-      pkgs.zsh-powerlevel10k # zsh theme
-      pkgs.zsh-forgit # zsh forgit integration
-      pkgs.zsh-fzf-tab # zsh fzf tab completion
-      pkgs.ripgrep-all # for searching
-      pkgs.fd # for file finding
-      pkgs.bat # for file previewing
-      pkgs.wget # for wgetting
+    packages = with pkgs; [
+      zsh-powerlevel10k # zsh theme
+      zsh-forgit # zsh forgit integration
+      zsh-fzf-tab # zsh fzf tab completion
+      ripgrep-all # for searching
+      fd # for file finding
+      bat # for file previewing
+      wget # for wgetting
+      nodejs
       # Open Search and open files by contents in VSCode
-      (pkgs.writeShellApplication {
+      (writeShellApplication {
         name = "textsearch";
-        runtimeInputs = [pkgs.ripgrep-all pkgs.fzf pkgs.bat pkgs.vscode];
+        runtimeInputs = [ripgrep-all fzf bat vscode];
         text = ''
           RG_PREFIX="rga --column --line-number --no-heading --color=always --smart-case"
           INITIAL_QUERY="''${*:-}"
@@ -43,9 +44,9 @@
         '';
       })
       # Search and open files by name in VSCode
-      (pkgs.writeShellApplication {
+      (writeShellApplication {
         name = "filesearch";
-        runtimeInputs = [pkgs.fd pkgs.fzf pkgs.vscode];
+        runtimeInputs = [fd fzf vscode];
         text = ''
           INITIAL_QUERY="''${*:-}"
           result=$(fd | fzf --query "$INITIAL_QUERY")
@@ -145,6 +146,8 @@
         "workbench.colorTheme" = "Default Light Modern";
         "terminal.integrated.defaultProfile.linux" = "zsh";
         "terminal.integrated.fontFamily" = "MesloLGS NF";
+        # Allow sudo to work in integrated terminal
+        "terminal.integrated.allowChmod" = false;
         # trust all files
         "security.workspace.trust.untrustedFiles" = "open";
         # commit all changes when there are no staged changes
@@ -157,7 +160,8 @@
         "editor.formatOnSave" = true;
         # copilot settings
         "chat.agent.maxRequests" = 100;
-        "chat.tools.autoApprove" = true;
+        # auto approve chat responses (yolo mode)
+        "chat.tools.global.autoApprove" = true;
       };
     };
   };

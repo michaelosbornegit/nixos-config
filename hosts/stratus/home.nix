@@ -17,26 +17,27 @@
 
   home.homeDirectory = "/home/${user}";
 
-  home.packages = [
+  home.packages = with pkgs; [
     # packages
-    pkgs.jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-    pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-    pkgs.esptool # for interacting with esp32 boards
+    jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
+    wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
+    esptool # for interacting with esp32 boards
     # apps
-    pkgs.microsoft-edge
-    pkgs.discord
-    # pkgs.prusa-slicer
-    # pkgs.mongodb-compass
-    # pkgs.code-cursor
-    # pkgs.windsurf
-    pkgs.appimage-run
-    pkgs.warp-terminal
-    pkgs.spotify
+    microsoft-edge
+    discord
+    # prusa-slicer
+    # mongodb-compass
+    # code-cursor
+    # windsurf
+    appimage-run
+    warp-terminal
+    spotify
     # games/fun
-    pkgs.prismlauncher # for minecraft for fun
-    pkgs.parsec-bin
-    # pkgs.ollama-cuda # takes forever to install, so not included in normal builds
-    pkgs.vlc
+    prismlauncher # for minecraft for fun
+    parsec-bin
+    # ollama-cuda # takes forever to install, so not included in normal builds
+    vlc
+    plex-desktop
   ];
 
   # Nicely reload system units when changing configs

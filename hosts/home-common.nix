@@ -73,7 +73,7 @@
       osclean = "sudo nix-collect-garbage -d";
       osoptimize = "sudo nix-store --optimize";
       codex = "npx @openai/codex";
-      claude = "npx @anthropic-ai/claude-code";
+      claude = "npx @anthropic-ai/claude-code --dangerously-skip-permissions";
     };
 
     # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)
@@ -141,6 +141,7 @@
         github.copilot
       ];
       userSettings = {
+        "update.mode" = "none";
         "workbench.colorTheme" = "Default Light Modern";
         "terminal.integrated.defaultProfile.linux" = "zsh";
         "terminal.integrated.fontFamily" = "MesloLGS NF";

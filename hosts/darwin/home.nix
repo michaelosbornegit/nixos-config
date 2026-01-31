@@ -12,24 +12,23 @@
   # Erroring and usually unneeded, will install separately if needed
   # programs.firefox.enable = true;
 
-  home.packages = [
-    # pkgs.microsoft-edge If this is ever available for aarch64 darwin
+  home.packages = with pkgs; [
+    # microsoft-edge If this is ever available for aarch64 darwin
 
     # utilities
-    pkgs.coreutils-prefixed
-    pkgs.scrcpy
-    pkgs.raycast
-    pkgs.loopwm
-    pkgs.nodejs
+    coreutils-prefixed
+    scrcpy
+    raycast
+    loopwm
 
     # apps
-    pkgs.postman
-    pkgs.code-cursor
-    # pkgs.warp-terminal
-    # pkgs.windsurf
-    pkgs.ghostty-bin
+    postman
+    code-cursor
+    # warp-terminal
+    # windsurf
+    ghostty-bin
     # use these through npm
-    # pkgs.codex
-    # pkgs.claude-code
+    # codex
+    # claude-code
   ];
 }

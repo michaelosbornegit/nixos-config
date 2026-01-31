@@ -7,18 +7,18 @@
 }: {
   home.homeDirectory = "/home/${user}";
 
-  home.packages = [
+  home.packages = with pkgs; [
     # packages
-    # pkgs.jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-    # pkgs.wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-    # pkgs.esptool # for interacting with esp32 boards
+    # jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
+    # wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
+    # esptool # for interacting with esp32 boards
     # # apps
-    pkgs.microsoft-edge
-    # pkgs.discord
-    # pkgs.prusa-slicer
-    # pkgs.mongodb-compass
+    microsoft-edge
+    # discord
+    # prusa-slicer
+    # mongodb-compass
     # # games/fun
-    # pkgs.prismlauncher # for minecraft for fun
+    # prismlauncher # for minecraft for fun
   ];
 
   # Nicely reload system units when changing configs

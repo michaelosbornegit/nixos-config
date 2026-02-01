@@ -38,6 +38,7 @@
     # ollama-cuda # takes forever to install, so not included in normal builds
     vlc
     plex-desktop
+    dolphin-emu
   ];
 
   # Nicely reload system units when changing configs
@@ -67,5 +68,7 @@
               flatpak install flathub org.vinegarhq.Sober && \
               flatpak update && \
               flatpak run org.vinegarhq.Sober";
+    gopher64 = "flatpak install -y flathub io.github.gopher64.gopher64 && \
+                flatpak run io.github.gopher64.gopher64";
   };
 }

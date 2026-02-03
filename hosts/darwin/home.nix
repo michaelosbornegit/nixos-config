@@ -17,6 +17,7 @@
 
     # utilities
     coreutils-prefixed
+    gh
     scrcpy
     raycast
     loopwm

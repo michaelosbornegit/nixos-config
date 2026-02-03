@@ -16,6 +16,7 @@
 
     file = {
       ".p10k-config".source = ../dotfiles/.p10k-config;
+      ".config/ghostty/config".source = ../dotfiles/.config/ghostty/config;
     };
 
     packages = with pkgs; [

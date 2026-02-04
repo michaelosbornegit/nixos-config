@@ -1,0 +1,1 @@
+If you ever need to run something and it isn't installed, you can use nix-shell -p <package-name>

@@ -4,11 +4,15 @@
   inputs,
   outputs,
   lib,
+  config,
   pkgs,
   user,
   stateVersion,
   ...
-}: {
+}: let
+  # Path to dotfiles in the repo - symlinks point here so edits flow back to git
+  dotfilesPath = "${config.home.homeDirectory}/development/repos/nixos-config/dotfiles";
+in {
   nixpkgs.config.allowUnfree = true;
 
   home = {
@@ -17,6 +21,14 @@
     file = {
       ".p10k-config".source = ../dotfiles/.p10k-config;
       ".config/ghostty/config".source = ../dotfiles/.config/ghostty/config;
+      # AI coding assistant instructions - using mkOutOfStoreSymlink so edits flow back to git
+      ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
+      ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
+      ".gitlab/duo/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
+      # Shared skills directory - edits flow back to git
+      # Codex will recreate its .system/ skills inside the symlinked directory
+      ".claude/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills";
+      ".codex/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills";
     };
 
     packages = with pkgs; [

@@ -32,11 +32,12 @@
     {
       home-manager = {
         backupFileExtension = "hm-bak";
+        extraSpecialArgs = {inherit inputs outputs user stateVersion;};
         users.${user} = {
           imports = [
-            (import ../home-common.nix {inherit inputs outputs lib pkgs user stateVersion;})
-            (import ./home.nix {inherit inputs outputs pkgs user;})
-            (import ../gnome-home-conf.nix {inherit inputs outputs pkgs;})
+            ../home-common.nix
+            ./home.nix
+            ../gnome-home-conf.nix
           ];
         };
       };

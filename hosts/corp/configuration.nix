@@ -27,11 +27,12 @@
     ../gnome.nix
     inputs.home-manager.nixosModules.home-manager
     {
+      home-manager.extraSpecialArgs = {inherit inputs outputs user stateVersion;};
       home-manager.users.${user} = {
         imports = [
-          (import ../home-common.nix {inherit inputs outputs lib pkgs user stateVersion;})
-          (import ./home.nix {inherit inputs outputs pkgs user;})
-          (import ../gnome-home-conf.nix {inherit inputs outputs pkgs user;})
+          ../home-common.nix
+          ./home.nix
+          ../gnome-home-conf.nix
         ];
       };
     }

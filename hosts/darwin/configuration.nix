@@ -13,13 +13,15 @@
     ../common.nix
     inputs.home-manager.darwinModules.home-manager
     {
+      home-manager.backupFileExtension = "hm-bak";
+      home-manager.extraSpecialArgs = {
+        inherit inputs outputs user;
+        stateVersion = homeStateVersion;
+      };
       home-manager.users.${user} = {
         imports = [
-          (import ../home-common.nix {
-            inherit inputs outputs lib pkgs user;
-            stateVersion = homeStateVersion;
-          })
-          (import ./home.nix {inherit inputs outputs pkgs user;})
+          ../home-common.nix
+          ./home.nix
         ];
       };
     }

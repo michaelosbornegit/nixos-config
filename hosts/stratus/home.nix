@@ -39,6 +39,7 @@
     vlc
     plex-desktop
     dolphin-emu
+    ghostty
   ];
 
   # Nicely reload system units when changing configs

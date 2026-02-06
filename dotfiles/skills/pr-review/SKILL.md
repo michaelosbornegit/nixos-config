@@ -40,10 +40,39 @@ Each comment in the JSON response has:
 - `path` - the file path
 - `line` or `original_line` - line number
 - `body` - the reviewer's comment text
+- `in_reply_to_id` - if present, this is a reply to another comment (skip these, they're already handled)
 
-### 4. Process Each Issue ONE AT A TIME
+### 4. Fetch Review Thread IDs (for resolving later)
 
-**CRITICAL: Complete ALL steps (A through H) for each issue before moving to the next.**
+Get the GraphQL thread IDs needed to resolve conversations:
+
+```bash
+gh api graphql -f query='
+query {
+  repository(owner: "OWNER", name: "REPO") {
+    pullRequest(number: PR_NUMBER) {
+      reviewThreads(first: 50) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) {
+            nodes {
+              body
+              path
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+Save the `id` field (format: `PRRT_xxxx`) for each unresolved thread - you'll need these to resolve the threads after fixing.
+
+### 5. Process Each Issue ONE AT A TIME
+
+**CRITICAL: Complete ALL steps (A through G) for each issue before moving to the next.**
 
 #### Step A: Present the Issue
 
@@ -105,25 +134,28 @@ Added null check before accessing the property."
 
 The COMMENT_ID is the `id` field from the comment JSON you fetched in Step 3.
 
-#### Step G: Resolve the Thread (Optional)
+#### Step G: Move to Next Issue
 
-If you have permission to resolve threads:
+Only after completing A-F, proceed to the next comment.
+
+### 6. Resolve All Threads
+
+**CRITICAL: After all issues have been addressed, resolve ALL review threads.**
+
+Use the thread IDs (format: `PRRT_xxxx`) from Step 4:
 
 ```bash
 gh api graphql -f query='
-  mutation {
-    resolveReviewThread(input: {threadId: "PRRT_xxxx"}) {
-      thread { isResolved }
-    }
+mutation {
+  resolveReviewThread(input: {threadId: "PRRT_kwDOxxxxxx"}) {
+    thread { isResolved }
   }
-'
+}'
 ```
 
-#### Step H: Move to Next Issue
+Resolve each thread individually. You can run multiple resolve mutations in parallel.
 
-Only after completing A-G, proceed to the next comment.
-
-### 5. Final Summary
+### 7. Final Summary
 
 After all issues:
 - Total issues found
@@ -141,3 +173,9 @@ After all issues:
 
 5. **WRONG:** Using placeholder text like `<comment-id>` in commands
 6. **RIGHT:** Use the actual numeric ID from the comment JSON (e.g., `1234567890`)
+
+7. **WRONG:** Forgetting to resolve review threads after fixing issues
+8. **RIGHT:** Always resolve threads using the GraphQL API after addressing each issue
+
+9. **WRONG:** Using the REST API comment `id` to resolve threads
+10. **RIGHT:** Use the GraphQL thread `id` (format: `PRRT_xxxx`) from the reviewThreads query

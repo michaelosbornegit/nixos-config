@@ -135,6 +135,11 @@ in {
     options = ["--cmd cd"];
   };
 
+  # Suppress zoxide's doctor warning — it complains about not being last in .zshrc,
+  # but home-manager controls the order and nothing after it overrides the cd function.
+  home.sessionVariables._ZO_DOCTOR = "0";
+  home.sessionVariables.npm_config_yes = "true";
+
   programs.eza = {
     enable = true;
     colors = "always";

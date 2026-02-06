@@ -1,2 +1,4 @@
 # Ignore Codex system skills (auto-generated)
 dotfiles/skills/.system/
+
+.DS_Store

@@ -2,3 +2,6 @@ theme = Atom One Light
 
 keybind = cmd+shift+equal=equalize_splits
 keybind = ctrl+shift+equal=equalize_splits
+keybind = ctrl+d=new_split:right
+keybind = ctrl+shift+d=new_split:down
+keybind = ctrl+w=close_surface

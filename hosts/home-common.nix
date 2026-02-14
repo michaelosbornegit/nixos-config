@@ -40,6 +40,7 @@ in {
       bat # for file previewing
       wget # for wgetting
       nodejs
+      pnpm
       # Open Search and open files by contents in VSCode
       (writeShellApplication {
         name = "textsearch";

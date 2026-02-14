@@ -87,26 +87,22 @@ in {
         else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
       osclean = "sudo nix-collect-garbage -d";
       osoptimize = "sudo nix-store --optimize";
-      codex = "npx @openai/codex";
+      codex = "npx @openai/codex --dangerously-bypass-approvals-and-sandbox";
       claude = "npx @anthropic-ai/claude-code --dangerously-skip-permissions";
     };
 
-    # Set ZSH_FZF_HISTORY_SEARCH_BIND before plugins load (mkOrder 550 runs before completion init)
-    # This ensures the zsh-fzf-history-search plugin uses our custom up arrow binding instead of ^r
     initContent = lib.mkMerge [
-      (lib.mkOrder 550 (
-        if pkgs.stdenv.isDarwin
-        then "ZSH_FZF_HISTORY_SEARCH_BIND='^[[A'"
-        else ''
-          if [[ -n ''${terminfo[kcuu1]} ]]; then
-            ZSH_FZF_HISTORY_SEARCH_BIND=''${terminfo[kcuu1]}
-          else
-            ZSH_FZF_HISTORY_SEARCH_BIND=$'\e[A'
-          fi
-        ''
-      ))
+      (lib.mkOrder 550 ''
+        # Use official fzf history widget for Up-arrow to preserve multiline entries.
+        if [[ -n ''${terminfo[kcuu1]} ]]; then
+          bindkey ''${terminfo[kcuu1]} fzf-history-widget
+        fi
+        bindkey '^[[A' fzf-history-widget
+        bindkey '^[OA' fzf-history-widget
+      '')
       ''
-        ZSH_FZF_HISTORY_SEARCH_END_OF_LINE='true'
+        # Prevent zsh-hist from rewriting multiline history into literal \n.
+        zstyle ':hist:*' auto-format no
         source ~/.p10k-config
         source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.zsh
         source ${pkgs.zsh-forgit}/share/zsh/zsh-forgit/forgit.plugin.zsh
@@ -121,12 +117,6 @@ in {
       }
     ];
 
-    zplug = {
-      enable = true;
-      plugins = [
-        {name = "joshskidmore/zsh-fzf-history-search";}
-      ];
-    };
   };
 
   programs.fzf.enable = true;

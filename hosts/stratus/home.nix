@@ -25,6 +25,7 @@
     # apps
     microsoft-edge
     discord
+    scrcpy
     # prusa-slicer
     # mongodb-compass
     # code-cursor

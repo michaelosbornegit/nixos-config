@@ -1,7 +1,6 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 {
-  inputs,
   outputs,
   lib,
   config,
@@ -13,7 +12,13 @@
   # Path to dotfiles in the repo - symlinks point here so edits flow back to git
   dotfilesPath = "${config.home.homeDirectory}/development/repos/nixos-config/dotfiles";
 in {
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = {
+    config.allowUnfree = true;
+    overlays = [
+      # Keep Home Manager package set aligned with temporary Edge workaround.
+      outputs.overlays.modifications
+    ];
+  };
 
   home = {
     username = "${user}";

@@ -1,8 +1,4 @@
-{
-  inputs,
-  outputs,
-  ...
-}: {
+_: {
   # change gnome to my liking
   dconf.settings = {
     # IMPORTANT disable sleep, for some reason things break after sleep

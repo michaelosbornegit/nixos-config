@@ -1,103 +1,32 @@
-# HEAVY WIP
 {
-  inputs,
-  outputs,
-  lib,
-  config,
   user,
   pkgs,
-  stateVersion,
   ...
 }: {
-  # You can import other NixOS modules here
   imports = [
-    # If you want to use modules your own flake exports (from modules/nixos):
-    # outputs.nixosModules.example
-
-    # Or modules from other flakes (such as nixos-hardware):
-    # inputs.hardware.nixosModules.common-cpu-amd
-    # inputs.hardware.nixosModules.common-ssd
-
-    # You can also split up your configuration and import pieces of it here:
-    # ./users.nix
-
-    # Import your generated (nixos-generate-config) hardware configuration
     ./hardware-configuration.nix
-    ../common.nix
+    ../../modules/nixos/default.nix
     ../gnome.nix
-    inputs.home-manager.nixosModules.home-manager
-    {
-      home-manager.extraSpecialArgs = {inherit inputs outputs user stateVersion;};
-      home-manager.users.${user} = {
-        imports = [
-          ../home-common.nix
-          ./home.nix
-          ../gnome-home-conf.nix
-        ];
-      };
-    }
   ];
 
-  nixpkgs = {
-    # You can add overlays here
-    overlays = [
-      # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-      outputs.overlays.modifications
-      outputs.overlays.stable-packages
-      outputs.overlays.unstable-packages
-
-      # You can also add overlays exported from other flakes:
-      # neovim-nightly-overlay.overlays.default
-
-      # Or define it inline, for example:
-      # (final: prev: {
-      #   hi = final.hello.overrideAttrs (oldAttrs: {
-      #     patches = [ ./change-hello-to-hi.patch ];
-      #   });
-      # })
-    ];
-    # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-    };
-  };
-
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    settings = {
-      # Enable flakes and new 'nix' command
-      experimental-features = "nix-command flakes";
-      # Opinionated: disable global registry
-      flake-registry = "";
-      # Workaround for https://github.com/NixOS/nix/issues/9574
-      nix-path = config.nix.nixPath;
-    };
-    # Opinionated: disable channels
-    channel.enable = false;
-
-    # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-  };
+  home-manager.users.${user}.imports = [
+    ./home.nix
+    ../gnome-home-conf.nix
+  ];
 
   networking.hostName = "vm";
 
   users.users.${user} = {
     isNormalUser = true;
-    description = "${user}";
+    description = user;
     extraGroups = [
       "wheel"
     ];
     shell = pkgs.zsh;
   };
 
-  # guest agent
-  services.qemuGuest.enable = true;
-  services.spice-vdagentd.enable = true; # enable copy and paste between host and guest
-
-  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  system.stateVersion = stateVersion;
+  services = {
+    qemuGuest.enable = true;
+    spice-vdagentd.enable = true;
+  };
 }

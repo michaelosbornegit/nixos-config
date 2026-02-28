@@ -18,6 +18,7 @@
 
   home.packages = with pkgs; [
     # packages
+    gh
     jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
     wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
     esptool # for interacting with esp32 boards
@@ -40,6 +41,8 @@
     plex-desktop
     dolphin-emu
     ghostty
+    gnomeExtensions.vitals
+    gnomeExtensions.quick-settings-audio-panel
   ];
 
   # Nicely reload system units when changing configs
@@ -61,6 +64,32 @@
   home.file = {
     ".config/mimeapps.list".source = ../../dotfiles/.config/mimeapps.list;
     ".config/mimeapps.list".force = true;
+  };
+
+  dconf.settings."org/gnome/shell" = {
+    disable-user-extensions = false;
+    enabled-extensions = [
+      "Vitals@CoreCoding.com"
+      "quick-settings-audio-panel@rayzeq.github.io"
+    ];
+  };
+
+  dconf.settings."org/gnome/shell/extensions/vitals" = {
+    show-temperature = false;
+    show-voltage = false;
+    show-fan = false;
+    show-system = false;
+    show-storage = false;
+    show-network = false;
+    show-battery = false;
+    show-memory = true;
+    show-processor = true;
+    show-gpu = true;
+    hot-sensors = [
+      "_memory_usage_"
+      "_processor_usage_"
+      "_gpu#1_graphics_"
+    ];
   };
 
   programs.zsh.shellAliases = {

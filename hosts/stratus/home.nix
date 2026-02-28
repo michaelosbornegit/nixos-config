@@ -74,6 +74,13 @@
     ];
   };
 
+  dconf.settings."org/gnome/shell/keybindings" = {
+    show-screenshot-ui = [
+      "Print"
+      "<Super><Shift>s"
+    ];
+  };
+
   dconf.settings."org/gnome/shell/extensions/vitals" = {
     show-temperature = false;
     show-voltage = false;

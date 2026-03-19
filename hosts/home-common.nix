@@ -22,6 +22,7 @@ in {
 
   home = {
     username = "${user}";
+    sessionPath = ["$HOME/.local/bin"];
 
     file = {
       ".p10k-config".source = ../dotfiles/.p10k-config;
@@ -40,7 +41,8 @@ in {
       zsh-powerlevel10k # zsh theme
       zsh-forgit # zsh forgit integration
       zsh-fzf-tab # zsh fzf tab completion
-      ripgrep-all # for searching
+      ripgrep # for searching
+      ripgrep-all # for searching all file types
       fd # for file finding
       bat # for file previewing
       wget # for wgetting
@@ -93,10 +95,14 @@ in {
       osclean = "sudo nix-collect-garbage -d";
       osoptimize = "sudo nix-store --optimize";
       codex = "npx @openai/codex --dangerously-bypass-approvals-and-sandbox";
-      claude = "npx @anthropic-ai/claude-code --dangerously-skip-permissions";
     };
 
     initContent = lib.mkMerge [
+      (lib.mkOrder 500 ''
+        # Child shells can inherit Home Manager's "already sourced" guard vars
+        # without inheriting the updated PATH, so restore user-local binaries here.
+        path=("$HOME/.local/bin" $path)
+      '')
       (lib.mkOrder 550 ''
         # Use official fzf history widget for Up-arrow to preserve multiline entries.
         if [[ -n ''${terminfo[kcuu1]} ]]; then

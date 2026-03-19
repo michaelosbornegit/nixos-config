@@ -1,7 +1,6 @@
 ---
 name: pr-review
 description: Review and fix issues from a GitHub Pull Request code review. Use when addressing PR feedback, fixing review comments, or resolving code review threads.
-disable-model-invocation: true
 allowed-tools: Bash(gh *), Read, Edit, Grep, Glob
 ---
 
@@ -11,7 +10,31 @@ Review and fix issues from a GitHub Pull Request code review, handling each issu
 
 ## Process
 
-### 1. List Open PRs and Ask User to Select
+### 1. Verify Branch Is Up-to-Date with Main
+
+Before doing anything else, check that the latest main/master branch has been merged into the current PR branch. This prevents reviewing stale code.
+
+```bash
+# Fetch latest from remote
+git fetch origin
+
+# Determine default branch (main or master)
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+
+# Check if the current branch contains the latest commit from the default branch
+git merge-base --is-ancestor "origin/$DEFAULT_BRANCH" HEAD
+```
+
+If the exit code is **non-zero**, the branch is **not** up-to-date with the default branch. **Stop immediately** and inform the user:
+
+```
+⛔ The current branch is not up-to-date with origin/<default-branch>.
+Please merge or rebase the latest <default-branch> into your branch before running the review.
+```
+
+Do NOT proceed with the review until this is resolved.
+
+### 2. List Open PRs and Ask User to Select
 
 ```bash
 gh pr list --state open
@@ -19,7 +42,7 @@ gh pr list --state open
 
 Prompt the user to select which PR to review.
 
-### 2. Get Repository Info
+### 3. Get Repository Info
 
 Get the owner and repo name for API calls:
 
@@ -27,7 +50,7 @@ Get the owner and repo name for API calls:
 gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"'
 ```
 
-### 3. Fetch PR Review Comments
+### 4. Fetch PR Review Comments
 
 Get all review comments. **Save the `id` field from each comment** - this is the comment_id needed to reply to that specific thread.
 
@@ -42,7 +65,7 @@ Each comment in the JSON response has:
 - `body` - the reviewer's comment text
 - `in_reply_to_id` - if present, this is a reply to another comment (skip these, they're already handled)
 
-### 4. Fetch Review Thread IDs (for resolving later)
+### 5. Fetch Review Thread IDs (for resolving later)
 
 Get the GraphQL thread IDs needed to resolve conversations:
 
@@ -70,7 +93,7 @@ query {
 
 Save the `id` field (format: `PRRT_xxxx`) for each unresolved thread - you'll need these to resolve the threads after fixing.
 
-### 5. Process Each Issue ONE AT A TIME
+### 6. Process Each Issue ONE AT A TIME
 
 **CRITICAL: Complete ALL steps (A through G) for each issue before moving to the next.**
 
@@ -132,17 +155,17 @@ gh api repos/VMG-Health/bval_automation_portal/pulls/8/comments/1234567890/repli
 Added null check before accessing the property."
 ```
 
-The COMMENT_ID is the `id` field from the comment JSON you fetched in Step 3.
+The COMMENT_ID is the `id` field from the comment JSON you fetched in Step 4.
 
 #### Step G: Move to Next Issue
 
 Only after completing A-F, proceed to the next comment.
 
-### 6. Resolve All Threads
+### 7. Resolve All Threads
 
 **CRITICAL: After all issues have been addressed, resolve ALL review threads.**
 
-Use the thread IDs (format: `PRRT_xxxx`) from Step 4:
+Use the thread IDs (format: `PRRT_xxxx`) from Step 5:
 
 ```bash
 gh api graphql -f query='
@@ -155,7 +178,7 @@ mutation {
 
 Resolve each thread individually. You can run multiple resolve mutations in parallel.
 
-### 7. Final Summary
+### 8. Final Summary
 
 After all issues:
 - Total issues found

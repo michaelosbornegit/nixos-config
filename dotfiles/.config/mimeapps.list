@@ -1,10 +1,18 @@
 [Added Associations]
+text/html=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
+application/xhtml+xml=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
+x-scheme-handler/http=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
+x-scheme-handler/https=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
 application/octet-stream=org.gnome.TextEditor.desktop;
 image/gif=org.gnome.Loupe.desktop;microsoft-edge.desktop;
 image/webp=org.gnome.Loupe.desktop;microsoft-edge.desktop;
 image/png=microsoft-edge.desktop;org.gnome.Loupe.desktop;
 
 [Default Applications]
+text/html=com.microsoft.Edge.desktop
+application/xhtml+xml=com.microsoft.Edge.desktop
+x-scheme-handler/http=com.microsoft.Edge.desktop
+x-scheme-handler/https=com.microsoft.Edge.desktop
 image/png=org.gnome.Loupe.desktop
 image/jpeg=org.gnome.Loupe.desktop
 image/gif=org.gnome.Loupe.desktop
@@ -28,4 +36,3 @@ image/svg+xml-compressed=org.gnome.Loupe.desktop
 image/avif=org.gnome.Loupe.desktop
 image/heic=org.gnome.Loupe.desktop
 image/jxl=org.gnome.Loupe.desktop
-

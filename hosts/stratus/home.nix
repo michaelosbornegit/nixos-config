@@ -24,6 +24,7 @@
     esptool # for interacting with esp32 boards
     # apps
     microsoft-edge
+    google-chrome
     discord
     scrcpy
     # prusa-slicer
@@ -100,6 +101,10 @@
   };
 
   programs.zsh.shellAliases = {
+    beammp = "${inputs.beammp.apps.${pkgs.system}.beammp.program}";
+    beammp-doctor = "${inputs.beammp.apps.${pkgs.system}.beammp-doctor.program}";
+    beammp-link = "${inputs.beammp.apps.${pkgs.system}.beammp-link.program}";
+    beammp-proton = "${inputs.beammp.apps.${pkgs.system}.beammp-proton.program}";
     melee = "nix run github:lytedev/slippi-nix#slippi-launcher";
     roblox = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
               flatpak install flathub org.vinegarhq.Sober && \

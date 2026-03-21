@@ -10,6 +10,9 @@
     slippi.url = "github:lytedev/slippi-nix";
     slippi.inputs.nixpkgs.follows = "nixpkgs";
 
+    beammp.url = "github:michaelosbornegit/beammp-nixos-flake";
+    beammp.inputs.nixpkgs.follows = "nixpkgs";
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -40,6 +43,13 @@
     # Your custom packages
     # Accessible through 'nix build', 'nix shell', etc
     packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+    apps = forAllSystems (system:
+      nixpkgs.lib.optionalAttrs (builtins.hasAttr system inputs.beammp.apps) {
+        beammp = inputs.beammp.apps.${system}.beammp;
+        beammp-doctor = inputs.beammp.apps.${system}.beammp-doctor;
+        beammp-link = inputs.beammp.apps.${system}.beammp-link;
+        beammp-proton = inputs.beammp.apps.${system}.beammp-proton;
+      });
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);

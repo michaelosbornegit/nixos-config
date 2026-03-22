@@ -8,11 +8,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1774110940,
-        "narHash": "sha256-MdLiity6+ayJTprl+Pa84lpz/hfQF3ckD5+XmoMylMM=",
+        "lastModified": 1774122938,
+        "narHash": "sha256-4WkwzB8DS7R5wauAzBCkUHU0PlzhyYSHD7DZK9eBW3o=",
         "owner": "michaelosbornegit",
         "repo": "beammp-nixos-flake",
-        "rev": "832e134af620326ec7f91571e52c132454e826c0",
+        "rev": "09651de61533432aca3bf784391fd117b9e9732f",
         "type": "github"
       },
       "original": {
@@ -107,11 +107,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1774007980,
-        "narHash": "sha256-FOnZjElEI8pqqCvB6K/1JRHTE8o4rer8driivTpq2uo=",
+        "lastModified": 1774135471,
+        "narHash": "sha256-TVeIGOxnfSPM6JvkRkXHpJECnj1OG2dXkWMSA4elzzQ=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "9670de2921812bc4e0452f6e3efd8c859696c183",
+        "rev": "856b01ebd1de3f53c3929ce8082d9d67d799d816",
         "type": "github"
       },
       "original": {

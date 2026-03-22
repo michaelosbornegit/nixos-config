@@ -36,14 +36,30 @@
     spotify
     # games/fun
     prismlauncher # for minecraft for fun
-    parsec-bin
     # ollama-cuda # takes forever to install, so not included in normal builds
     vlc
     plex-desktop
-    dolphin-emu
     ghostty
     gnomeExtensions.vitals
     gnomeExtensions.quick-settings-audio-panel
+    (writeShellScriptBin "ps2" ''
+      exec nix run /home/${user}/development/repos/nixos-config#ps2 -- "$@"
+    '')
+    (writeShellScriptBin "retroarch" ''
+      exec nix run /home/${user}/development/repos/nixos-config#retroarch -- "$@"
+    '')
+    (writeShellScriptBin "snes" ''
+      exec nix run /home/${user}/development/repos/nixos-config#snes -- "$@"
+    '')
+    (writeShellScriptBin "parsec" ''
+      exec nix run /home/${user}/development/repos/nixos-config#parsec-bin -- "$@"
+    '')
+    (writeShellScriptBin "gamecube" ''
+      exec nix run /home/${user}/development/repos/nixos-config#dolphin-emu -- "$@"
+    '')
+    (writeShellScriptBin "kdiskmark" ''
+      exec nix run /home/${user}/development/repos/nixos-config#kdiskmark -- "$@"
+    '')
   ];
 
   # Nicely reload system units when changing configs
@@ -101,10 +117,10 @@
   };
 
   programs.zsh.shellAliases = {
-    beammp = "${inputs.beammp.apps.${pkgs.system}.beammp.program}";
-    beammp-doctor = "${inputs.beammp.apps.${pkgs.system}.beammp-doctor.program}";
-    beammp-link = "${inputs.beammp.apps.${pkgs.system}.beammp-link.program}";
-    beammp-proton = "${inputs.beammp.apps.${pkgs.system}.beammp-proton.program}";
+    beammp = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp.program}";
+    beammp-doctor = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp-doctor.program}";
+    beammp-link = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp-link.program}";
+    beammp-proton = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp-proton.program}";
     melee = "nix run github:lytedev/slippi-nix#slippi-launcher";
     roblox = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
               flatpak install flathub org.vinegarhq.Sober && \

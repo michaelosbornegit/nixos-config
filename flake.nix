@@ -39,17 +39,34 @@
     # This is a function that generates an attribute by calling a function you
     # pass to it, with each system as an argument
     forAllSystems = nixpkgs.lib.genAttrs systems;
+    pkgsFor = system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    customAppsFor = system:
+      import ./apps {
+        pkgs = pkgsFor system;
+      };
   in {
     # Your custom packages
     # Accessible through 'nix build', 'nix shell', etc
-    packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
+    packages =
+      forAllSystems (system:
+        (import ./pkgs (pkgsFor system))
+        {
+          dolphin-emu = (pkgsFor system).dolphin-emu;
+          kdiskmark = (pkgsFor system).kdiskmark;
+          parsec-bin = (pkgsFor system).parsec-bin;
+        });
     apps = forAllSystems (system:
       nixpkgs.lib.optionalAttrs (builtins.hasAttr system inputs.beammp.apps) {
         beammp = inputs.beammp.apps.${system}.beammp;
         beammp-doctor = inputs.beammp.apps.${system}.beammp-doctor;
         beammp-link = inputs.beammp.apps.${system}.beammp-link;
         beammp-proton = inputs.beammp.apps.${system}.beammp-proton;
-      });
+      }
+      // (customAppsFor system).apps);
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);

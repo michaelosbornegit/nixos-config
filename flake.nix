@@ -53,7 +53,7 @@
     # Accessible through 'nix build', 'nix shell', etc
     packages =
       forAllSystems (system:
-        (import ./pkgs (pkgsFor system))
+        (import ./pkgs (pkgsFor system)) //
         {
           dolphin-emu = (pkgsFor system).dolphin-emu;
           kdiskmark = (pkgsFor system).kdiskmark;

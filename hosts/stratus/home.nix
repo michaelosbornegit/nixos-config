@@ -32,8 +32,6 @@
     # code-cursor
     # windsurf
     appimage-run
-    warp-terminal
-    spotify
     # games/fun
     prismlauncher # for minecraft for fun
     # ollama-cuda # takes forever to install, so not included in normal builds

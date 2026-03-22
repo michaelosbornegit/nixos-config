@@ -72,10 +72,6 @@
       gnome-remote-desktop
       gnome-session
       xrdp
-      kdiskmark
-      (retroarch.withCores (cores: with cores; [
-        snes9x
-      ]))
     ];
   };
 

@@ -19,9 +19,15 @@
 
   networking = {
     hostName = "stratus";
-    networkmanager.enable = true;
+    networkmanager = {
+      enable = true;
+      plugins = with pkgs; [networkmanager-openvpn];
+    };
     firewall.enable = false;
   };
+
+  # Compressed in-RAM swap helps desktop responsiveness under memory pressure.
+  zramSwap.enable = true;
 
   users.users.${user} = {
     isNormalUser = true;
@@ -43,18 +49,6 @@
       dedicatedServer.openFirewall = true;
       localNetworkGameTransfers.openFirewall = true;
     };
-    obs-studio = {
-      enable = true;
-      package = pkgs.obs-studio.override {
-        cudaSupport = true;
-      };
-      plugins = with pkgs.obs-studio-plugins; [
-        wlrobs
-        obs-pipewire-audio-capture
-        obs-gstreamer
-        obs-vkcapture
-      ];
-    };
     nix-ld.enable = true;
   };
 
@@ -69,9 +63,7 @@
   environment = {
     pathsToLink = ["/share/zsh"];
     systemPackages = with pkgs; [
-      gnome-remote-desktop
-      gnome-session
-      xrdp
+      f3d
     ];
   };
 
@@ -90,12 +82,7 @@
 
   services = {
     xserver.videoDrivers = ["nvidia"];
-    gnome.gnome-remote-desktop.enable = true;
-    xrdp = {
-      enable = true;
-      openFirewall = true;
-      defaultWindowManager = "gnome-session";
-    };
+    gnome.gnome-remote-desktop.enable = false;
     flatpak.enable = true;
     openssh.enable = true;
   };

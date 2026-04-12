@@ -2,10 +2,186 @@
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 {
   inputs,
+  lib,
   pkgs,
   user,
   ...
-}: {
+}: let
+  repoFlake = "/home/${user}/development/repos/nixos-config";
+  hostLazyPackagesPath = "${repoFlake}/hosts/stratus/lazy-packages.nix";
+  mkHostLazyPackageExpr = packageAttr:
+    lib.escapeShellArg ''
+      let
+        flake = builtins.getFlake "${repoFlake}";
+        pkgs = import flake.inputs.nixpkgs {
+          system = builtins.currentSystem;
+          config.allowUnfree = true;
+        };
+      in
+      (import "${hostLazyPackagesPath}" { inherit pkgs; }).${packageAttr}
+    '';
+  lazyGuiApps = {
+    ps2 = {
+      desktopName = "PlayStation 2";
+      comment = "PlayStation 2 emulator";
+      icon = "pcsx2";
+      categories = [
+        "Game"
+      ];
+      execArg = "%F";
+      packageAttr = "ps2";
+    };
+    retroarch = {
+      desktopName = "RetroArch";
+      comment = "Frontend for emulators and game engines";
+      icon = "com.libretro.RetroArch";
+      categories = [
+        "Game"
+      ];
+      execArg = "%F";
+      packageAttr = "retroarch";
+    };
+    snes = {
+      desktopName = "Super Nintendo";
+      comment = "SNES emulator launcher";
+      icon = "com.libretro.RetroArch";
+      categories = [
+        "Game"
+      ];
+      execArg = "%F";
+      packageAttr = "snes";
+    };
+    parsec = {
+      desktopName = "Parsec";
+      comment = "Remote desktop and game streaming";
+      icon = "parsec";
+      categories = [
+        "Network"
+        "RemoteAccess"
+      ];
+      execArg = "%U";
+      packageAttr = "parsec";
+    };
+    gamecube = {
+      desktopName = "GameCube";
+      comment = "GameCube and Wii emulator";
+      icon = "dolphin-emu";
+      categories = [
+        "Game"
+      ];
+      execArg = "%F";
+      packageAttr = "gamecube";
+    };
+    kdiskmark = {
+      desktopName = "KDiskMark";
+      comment = "Disk benchmark tool";
+      icon = "kdiskmark";
+      categories = [
+        "System"
+        "Utility"
+      ];
+      execArg = "%U";
+      packageAttr = "kdiskmark";
+    };
+    bottles = {
+      desktopName = "Bottles";
+      comment = "Run Windows software and games";
+      icon = "com.usebottles.bottles";
+      categories = [
+        "Utility"
+      ];
+      execArg = "%U";
+      packageAttr = "bottles";
+    };
+    blender = {
+      desktopName = "Blender";
+      comment = "3D creation suite";
+      icon = "blender";
+      categories = [
+        "Graphics"
+        "3DGraphics"
+      ];
+      execArg = "%F";
+      mimeType = [
+        "application/x-blender"
+      ];
+      packageAttr = "blender";
+    };
+    obs = {
+      desktopName = "OBS Studio";
+      comment = "Streaming and recording software";
+      icon = "com.obsproject.Studio";
+      categories = [
+        "AudioVideo"
+        "Recorder"
+      ];
+      execArg = "%U";
+      packageAttr = "obs";
+    };
+    kdenlive = {
+      desktopName = "Kdenlive";
+      comment = "Video editor";
+      icon = "kdenlive";
+      categories = [
+        "AudioVideo"
+        "Video"
+        "AudioVideoEditing"
+      ];
+      execArg = "%U";
+      packageAttr = "kdenlive";
+    };
+    plex-desktop = {
+      desktopName = "Plex";
+      comment = "Plex desktop client";
+      icon = "plex";
+      categories = [
+        "AudioVideo"
+        "Video"
+      ];
+      execArg = "%U";
+      packageAttr = "plex-desktop";
+    };
+    prismlauncher = {
+      desktopName = "Prism Launcher";
+      comment = "Minecraft launcher";
+      icon = "prismlauncher";
+      categories = [
+        "Game"
+      ];
+      execArg = "%U";
+      packageAttr = "prismlauncher";
+    };
+  };
+
+  mkLazyCommand = command: cfg:
+    let
+      hostLazyPackageExpr = mkHostLazyPackageExpr cfg.packageAttr;
+    in
+      pkgs.writeShellScriptBin command (
+        if cfg ? packageAttr
+        then ''
+          result="$(nix build --impure --no-link --print-out-paths --expr ${hostLazyPackageExpr})"
+          exec "$result/bin/${cfg.binary or command}" "$@"
+        ''
+        else if cfg ? execScript
+        then cfg.execScript
+        else ''
+          exec nix run ${repoFlake}#${cfg.target} -- "$@"
+        ''
+      );
+
+  mkDesktopEntry = command: cfg:
+    {
+      name = cfg.desktopName;
+      comment = cfg.comment;
+      exec = "${command} ${cfg.execArg}";
+      icon = cfg.icon;
+      terminal = false;
+      categories = cfg.categories;
+    } // lib.optionalAttrs (cfg ? mimeType) {
+      mimeType = cfg.mimeType;
+    };
+in {
   imports = [
     inputs.slippi.homeManagerModules.default
     {
@@ -19,8 +195,6 @@
   home.packages = with pkgs; [
     # packages
     gh
-    jq # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
-    wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
     esptool # for interacting with esp32 boards
     # apps
     microsoft-edge
@@ -33,32 +207,13 @@
     # windsurf
     appimage-run
     # games/fun
-    prismlauncher # for minecraft for fun
     # ollama-cuda # takes forever to install, so not included in normal builds
     vlc
-    plex-desktop
     ghostty
     gnomeExtensions.vitals
+    gnomeExtensions.just-perfection
     gnomeExtensions.quick-settings-audio-panel
-    (writeShellScriptBin "ps2" ''
-      exec nix run /home/${user}/development/repos/nixos-config#ps2 -- "$@"
-    '')
-    (writeShellScriptBin "retroarch" ''
-      exec nix run /home/${user}/development/repos/nixos-config#retroarch -- "$@"
-    '')
-    (writeShellScriptBin "snes" ''
-      exec nix run /home/${user}/development/repos/nixos-config#snes -- "$@"
-    '')
-    (writeShellScriptBin "parsec" ''
-      exec nix run /home/${user}/development/repos/nixos-config#parsec-bin -- "$@"
-    '')
-    (writeShellScriptBin "gamecube" ''
-      exec nix run /home/${user}/development/repos/nixos-config#dolphin-emu -- "$@"
-    '')
-    (writeShellScriptBin "kdiskmark" ''
-      exec nix run /home/${user}/development/repos/nixos-config#kdiskmark -- "$@"
-    '')
-  ];
+  ] ++ lib.mapAttrsToList mkLazyCommand lazyGuiApps;
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
@@ -81,10 +236,35 @@
     ".config/mimeapps.list".force = true;
   };
 
+  gtk = {
+    enable = true;
+    gtk4.theme = null;
+    iconTheme = {
+      package = pkgs.papirus-icon-theme;
+      name = "Papirus";
+    };
+  };
+
+  xdg.desktopEntries =
+    lib.mapAttrs mkDesktopEntry lazyGuiApps
+    // {
+      beammp = {
+        name = "BeamMP";
+        comment = "Launch BeamMP in a terminal";
+        exec = inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp.program;
+        icon = "utilities-terminal";
+        terminal = true;
+        categories = [
+          "Game"
+        ];
+      };
+    };
+
   dconf.settings."org/gnome/shell" = {
     disable-user-extensions = false;
     enabled-extensions = [
       "Vitals@CoreCoding.com"
+      "just-perfection-desktop@just-perfection"
       "quick-settings-audio-panel@rayzeq.github.io"
     ];
   };
@@ -112,6 +292,16 @@
       "_processor_usage_"
       "_gpu#1_graphics_"
     ];
+  };
+
+  dconf.settings."org/gnome/shell/extensions/just-perfection" = {
+    animation = 4;
+    double-super-to-appgrid = false;
+  };
+
+  dconf.settings."org/gnome/desktop/interface" = {
+    enable-animations = true;
+    icon-theme = "Papirus";
   };
 
   programs.zsh.shellAliases = {

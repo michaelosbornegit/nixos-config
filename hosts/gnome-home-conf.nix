@@ -22,6 +22,8 @@ _: {
     "org/gnome/desktop/sound" = {
       # disable annoying sounds
       event-sounds = false;
+      # allow GNOME's volume controls, including per-app sliders, to amplify above 100%
+      allow-volume-above-100-percent = true;
     };
     "org/gnome/mutter" = {
       # enable drag to sides of screen tiling like in windows and elsewhere

@@ -92,9 +92,9 @@ in {
         if pkgs.stdenv.isDarwin
         then "(cd ~/development/repos/nixos-config && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
         else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
-      osclean = "sudo nix-collect-garbage -d";
+      osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       osoptimize = "sudo nix-store --optimize";
-      codex = "npx @openai/codex --dangerously-bypass-approvals-and-sandbox";
+      codex = "npx @openai/codex@latest --dangerously-bypass-approvals-and-sandbox";
     };
 
     initContent = lib.mkMerge [

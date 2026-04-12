@@ -84,8 +84,8 @@
     variant = "";
   };
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+  # Disable CUPS unless this host actually needs printing.
+  services.printing.enable = false;
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;

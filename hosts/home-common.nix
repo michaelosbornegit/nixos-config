@@ -163,11 +163,9 @@ in {
       ];
       userSettings = {
         "update.mode" = "none";
-        "workbench.colorTheme" = "Default Light Modern";
+        "workbench.colorTheme" = "Light Modern";
         "terminal.integrated.defaultProfile.linux" = "zsh";
         "terminal.integrated.fontFamily" = "MesloLGS NF";
-        # Allow sudo to work in integrated terminal
-        "terminal.integrated.allowChmod" = false;
         # trust all files
         "security.workspace.trust.untrustedFiles" = "open";
         # commit all changes when there are no staged changes
@@ -178,6 +176,8 @@ in {
         "git.confirmSync" = false;
         # format on save if possible
         "editor.formatOnSave" = true;
+        "editor.tabSize" = 2;
+        "editor.insertSpaces" = true;
         # copilot settings
         "chat.agent.maxRequests" = 100;
         # auto approve chat responses (yolo mode)

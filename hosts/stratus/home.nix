@@ -9,6 +9,9 @@
 }: let
   repoFlake = "/home/${user}/development/repos/nixos-config";
   hostLazyPackagesPath = "${repoFlake}/hosts/stratus/lazy-packages.nix";
+  vitalsWithPanelLabels = pkgs.gnomeExtensions.vitals.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [./vitals-panel-labels.patch];
+  });
   mkHostLazyPackageExpr = packageAttr:
     lib.escapeShellArg ''
       let
@@ -144,12 +147,23 @@
     prismlauncher = {
       desktopName = "Prism Launcher";
       comment = "Minecraft launcher";
-      icon = "prismlauncher";
+      icon = "minecraft";
       categories = [
         "Game"
       ];
       execArg = "%U";
       packageAttr = "prismlauncher";
+    };
+    minecraft = {
+      desktopName = "Minecraft";
+      comment = "Minecraft launcher";
+      icon = "minecraft";
+      categories = [
+        "Game"
+      ];
+      execArg = "%U";
+      packageAttr = "prismlauncher";
+      binary = "prismlauncher";
     };
   };
 
@@ -210,7 +224,7 @@ in {
     # ollama-cuda # takes forever to install, so not included in normal builds
     vlc
     ghostty
-    gnomeExtensions.vitals
+    vitalsWithPanelLabels
     gnomeExtensions.just-perfection
     gnomeExtensions.quick-settings-audio-panel
   ] ++ lib.mapAttrsToList mkLazyCommand lazyGuiApps;
@@ -252,7 +266,7 @@ in {
         name = "BeamMP";
         comment = "Launch BeamMP in a terminal";
         exec = inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp.program;
-        icon = "utilities-terminal";
+        icon = "beamng-drive";
         terminal = true;
         categories = [
           "Game"

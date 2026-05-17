@@ -31,9 +31,9 @@
 
   bottles = pkgs.bottles;
 
-  blender = pkgs.blender.override { cudaSupport = true; };
+  blender = pkgs.blender.override {cudaSupport = true;};
 
-  obs = (pkgs.wrapOBS.override { obs-studio = pkgs.obs-studio; }) {
+  obs = (pkgs.wrapOBS.override {obs-studio = pkgs.obs-studio;}) {
     plugins = with pkgs.obs-studio-plugins; [
       wlrobs
       obs-pipewire-audio-capture
@@ -47,4 +47,6 @@
   plex-desktop = pkgs.plex-desktop;
 
   prismlauncher = pkgs.prismlauncher;
+
+  xclicker = pkgs.xclicker;
 }

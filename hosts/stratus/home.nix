@@ -165,24 +165,33 @@
       packageAttr = "prismlauncher";
       binary = "prismlauncher";
     };
+    xclicker = {
+      desktopName = "XClicker";
+      comment = "Fast GUI autoclicker";
+      icon = "xclicker";
+      categories = [
+        "Utility"
+      ];
+      execArg = "%U";
+      packageAttr = "xclicker";
+    };
   };
 
-  mkLazyCommand = command: cfg:
-    let
-      hostLazyPackageExpr = mkHostLazyPackageExpr cfg.packageAttr;
-    in
-      pkgs.writeShellScriptBin command (
-        if cfg ? packageAttr
-        then ''
-          result="$(nix build --impure --no-link --print-out-paths --expr ${hostLazyPackageExpr})"
-          exec "$result/bin/${cfg.binary or command}" "$@"
-        ''
-        else if cfg ? execScript
-        then cfg.execScript
-        else ''
-          exec nix run ${repoFlake}#${cfg.target} -- "$@"
-        ''
-      );
+  mkLazyCommand = command: cfg: let
+    hostLazyPackageExpr = mkHostLazyPackageExpr cfg.packageAttr;
+  in
+    pkgs.writeShellScriptBin command (
+      if cfg ? packageAttr
+      then ''
+        result="$(nix build --impure --no-link --print-out-paths --expr ${hostLazyPackageExpr})"
+        exec "$result/bin/${cfg.binary or command}" "$@"
+      ''
+      else if cfg ? execScript
+      then cfg.execScript
+      else ''
+        exec nix run ${repoFlake}#${cfg.target} -- "$@"
+      ''
+    );
 
   mkDesktopEntry = command: cfg:
     {
@@ -192,7 +201,8 @@
       icon = cfg.icon;
       terminal = false;
       categories = cfg.categories;
-    } // lib.optionalAttrs (cfg ? mimeType) {
+    }
+    // lib.optionalAttrs (cfg ? mimeType) {
       mimeType = cfg.mimeType;
     };
 in {
@@ -206,28 +216,30 @@ in {
 
   home.homeDirectory = "/home/${user}";
 
-  home.packages = with pkgs; [
-    # packages
-    gh
-    esptool # for interacting with esp32 boards
-    # apps
-    microsoft-edge
-    google-chrome
-    discord
-    scrcpy
-    # prusa-slicer
-    # mongodb-compass
-    # code-cursor
-    # windsurf
-    appimage-run
-    # games/fun
-    # ollama-cuda # takes forever to install, so not included in normal builds
-    vlc
-    ghostty
-    vitalsWithPanelLabels
-    gnomeExtensions.just-perfection
-    gnomeExtensions.quick-settings-audio-panel
-  ] ++ lib.mapAttrsToList mkLazyCommand lazyGuiApps;
+  home.packages = with pkgs;
+    [
+      # packages
+      gh
+      esptool # for interacting with esp32 boards
+      # apps
+      microsoft-edge
+      google-chrome
+      discord
+      scrcpy
+      # prusa-slicer
+      # mongodb-compass
+      # code-cursor
+      # windsurf
+      appimage-run
+      # games/fun
+      # ollama-cuda # takes forever to install, so not included in normal builds
+      vlc
+      ghostty
+      vitalsWithPanelLabels
+      gnomeExtensions.just-perfection
+      gnomeExtensions.quick-settings-audio-panel
+    ]
+    ++ lib.mapAttrsToList mkLazyCommand lazyGuiApps;
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";

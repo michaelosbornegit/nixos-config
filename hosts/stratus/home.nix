@@ -162,8 +162,7 @@
         "Game"
       ];
       execArg = "%U";
-      packageAttr = "prismlauncher";
-      binary = "prismlauncher";
+      packageAttr = "minecraft";
     };
     xclicker = {
       desktopName = "XClicker";
@@ -274,6 +273,16 @@ in {
   xdg.desktopEntries =
     lib.mapAttrs mkDesktopEntry lazyGuiApps
     // {
+      discord = {
+        name = "Discord";
+        exec = "env XDG_SESSION_TYPE=x11 ${pkgs.discord}/bin/Discord";
+        icon = "discord";
+        terminal = false;
+        categories = [
+          "Network"
+          "InstantMessaging"
+        ];
+      };
       beammp = {
         name = "BeamMP";
         comment = "Launch BeamMP in a terminal";

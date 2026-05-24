@@ -48,5 +48,10 @@
 
   prismlauncher = pkgs.prismlauncher;
 
+  minecraft = pkgs.writeShellScriptBin "minecraft" ''
+    export PATH="${pkgs.lib.makeBinPath [pkgs.ffmpeg]}:$PATH"
+    exec ${pkgs.prismlauncher}/bin/prismlauncher "$@"
+  '';
+
   xclicker = pkgs.xclicker;
 }

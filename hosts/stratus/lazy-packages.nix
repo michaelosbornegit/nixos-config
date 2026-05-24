@@ -42,7 +42,9 @@
     ];
   };
 
-  kdenlive = pkgs.kdePackages.kdenlive;
+  kdenlive = pkgs.writeShellScriptBin "kdenlive" ''
+    exec env QT_QPA_PLATFORM=xcb QT_QPA_PLATFORMTHEME=gnome ${pkgs.kdePackages.kdenlive}/bin/kdenlive "$@"
+  '';
 
   plex-desktop = pkgs.plex-desktop;
 

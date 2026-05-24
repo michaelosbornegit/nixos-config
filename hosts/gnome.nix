@@ -25,6 +25,13 @@
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
+  # Give Qt/KDE applications GNOME-aware theming and file dialog integration.
+  qt = {
+    enable = true;
+    platformTheme = "gnome";
+    style = "adwaita";
+  };
+
   services.displayManager.gdm.autoSuspend = false;
 
   # MYEDIT Remove GNOME bloat, from https://nixos.wiki/wiki/GNOME

@@ -48,6 +48,10 @@
 
   plex-desktop = pkgs.plex-desktop;
 
+  vesktop = pkgs.vesktop;
+
+  google-chrome = pkgs.google-chrome;
+
   prismlauncher = pkgs.prismlauncher;
 
   minecraft = pkgs.writeShellScriptBin "minecraft" ''

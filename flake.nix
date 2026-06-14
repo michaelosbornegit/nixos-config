@@ -4,16 +4,14 @@
   inputs = {
     # Primary package set: unstable by default on every host.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # Optional fallback set for explicit per-package pinning.
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
-
     slippi.url = "github:lytedev/slippi-nix";
     slippi.inputs.nixpkgs.follows = "nixpkgs";
 
     beammp.url = "github:michaelosbornegit/beammp-nixos-flake";
     beammp.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Home manager
+    # Track Home Manager master with nixos-unstable; release branches are only
+    # for stable Nixpkgs channels.
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -51,20 +49,18 @@
   in {
     # Your custom packages
     # Accessible through 'nix build', 'nix shell', etc
-    packages =
-      forAllSystems (system:
-        let
-          pkgs = pkgsFor system;
-        in
-          (import ./pkgs pkgs) //
-          {
-          });
+    packages = forAllSystems (system: let
+      pkgs = pkgsFor system;
+    in
+      (import ./pkgs pkgs)
+      // {
+      });
     apps = forAllSystems (_system: {});
     # Formatter for your nix files, available through 'nix fmt'
     # Other options beside 'alejandra' include 'nixpkgs-fmt'
     formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
 
-    # Your custom packages and modifications, exported as overlays
+    # Your custom packages, exported as overlays
     overlays = import ./overlays {inherit inputs;};
     nixosConfigurations = {
       stratus = nixpkgs.lib.nixosSystem {

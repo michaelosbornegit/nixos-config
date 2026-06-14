@@ -11,8 +11,7 @@
     # wireguard-tools # for Private Internet Access VPN https://github.com/pia-foss/manual-connections/
     # esptool # for interacting with esp32 boards
     # # apps
-    microsoft-edge
-    # discord
+    firefox
     # prusa-slicer
     # mongodb-compass
     # # games/fun

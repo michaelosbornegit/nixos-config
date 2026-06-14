@@ -1,7 +1,6 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 {
-  outputs,
   lib,
   config,
   pkgs,
@@ -11,20 +10,8 @@
 }: let
   # Path to dotfiles in the repo - symlinks point here so edits flow back to git
   dotfilesPath = "${config.home.homeDirectory}/development/repos/nixos-config/dotfiles";
-  msPythonExtension = pkgs.vscode-utils.extensionFromVscodeMarketplace {
-    publisher = "ms-python";
-    name = "python";
-    version = "2026.4.0";
-    sha256 = "sha256-Q2HLvTzlzQkOEDkxYV/6FajRfgvjAD/4O3ki8W4fKyo=";
-  };
 in {
-  nixpkgs = {
-    config.allowUnfree = true;
-    overlays = [
-      # Keep Home Manager package set aligned with temporary Edge workaround.
-      outputs.overlays.modifications
-    ];
-  };
+  nixpkgs.config.allowUnfree = true;
 
   home = {
     username = "${user}";
@@ -156,19 +143,16 @@ in {
   programs.vscode = {
     enable = true;
     profiles.default = {
-      extensions = with pkgs.vscode-extensions;
-        [
-          ms-azuretools.vscode-docker
-          ms-vscode-remote.remote-ssh
-          ms-vscode-remote.remote-containers
-          bbenoist.nix
-          mechatroner.rainbow-csv
-          github.vscode-pull-request-github
-          github.copilot
-        ]
-        ++ [
-          msPythonExtension
-        ];
+      extensions = with pkgs.vscode-extensions; [
+        ms-azuretools.vscode-docker
+        ms-vscode-remote.remote-ssh
+        ms-vscode-remote.remote-containers
+        bbenoist.nix
+        ms-python.python
+        mechatroner.rainbow-csv
+        github.vscode-pull-request-github
+        github.copilot
+      ];
       userSettings = {
         "update.mode" = "none";
         "workbench.colorTheme" = "Light Modern";

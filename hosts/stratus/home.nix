@@ -9,9 +9,6 @@
 }: let
   repoFlake = "/home/${user}/development/repos/nixos-config";
   hostLazyPackagesPath = "${repoFlake}/hosts/stratus/lazy-packages.nix";
-  vitalsWithPanelLabels = pkgs.gnomeExtensions.vitals.overrideAttrs (old: {
-    patches = (old.patches or []) ++ [./vitals-panel-labels.patch];
-  });
   mkHostLazyPackageExpr = packageAttr:
     lib.escapeShellArg ''
       let
@@ -144,6 +141,30 @@
       execArg = "%U";
       packageAttr = "plex-desktop";
     };
+    discord = {
+      desktopName = "Vesktop";
+      comment = "Chat client with Linux screen sharing support";
+      icon = "vesktop";
+      categories = [
+        "Network"
+        "InstantMessaging"
+      ];
+      execArg = "%U";
+      binary = "vesktop";
+      packageAttr = "vesktop";
+    };
+    google-chrome = {
+      desktopName = "Google Chrome";
+      comment = "Access the Internet";
+      icon = "google-chrome";
+      categories = [
+        "Network"
+        "WebBrowser"
+      ];
+      execArg = "%U";
+      binary = "google-chrome-stable";
+      packageAttr = "google-chrome";
+    };
     prismlauncher = {
       desktopName = "Prism Launcher";
       comment = "Minecraft launcher";
@@ -221,9 +242,6 @@ in {
       gh
       esptool # for interacting with esp32 boards
       # apps
-      microsoft-edge
-      google-chrome
-      discord
       scrcpy
       # prusa-slicer
       # mongodb-compass
@@ -234,7 +252,6 @@ in {
       # ollama-cuda # takes forever to install, so not included in normal builds
       vlc
       ghostty
-      vitalsWithPanelLabels
       gnomeExtensions.just-perfection
       gnomeExtensions.quick-settings-audio-panel
     ]
@@ -242,6 +259,18 @@ in {
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
+
+  programs.firefox = {
+    enable = true;
+    configPath = ".mozilla/firefox";
+    profiles.default.settings = {
+      "media.ffmpeg.vaapi.enabled" = true;
+      "media.hardware-video-decoding.force-enabled" = true;
+      "media.rdd-ffmpeg.enabled" = true;
+      # RTX 2080 Ti has NVDEC for H.264/VP9/HEVC, but not AV1.
+      "media.av1.enabled" = false;
+    };
+  };
 
   programs.vscode.profiles.default.extensions = pkgs.vscode-utils.extensionsFromVscodeMarketplace [
     # MicroPico extension for esp32/pico w dev
@@ -273,16 +302,6 @@ in {
   xdg.desktopEntries =
     lib.mapAttrs mkDesktopEntry lazyGuiApps
     // {
-      discord = {
-        name = "Discord";
-        exec = "env XDG_SESSION_TYPE=x11 ${pkgs.discord}/bin/Discord";
-        icon = "discord";
-        terminal = false;
-        categories = [
-          "Network"
-          "InstantMessaging"
-        ];
-      };
       beammp = {
         name = "BeamMP";
         comment = "Launch BeamMP in a terminal";
@@ -293,12 +312,28 @@ in {
           "Game"
         ];
       };
+      firefox = {
+        name = "Firefox";
+        comment = "Access the Internet";
+        exec = "env LIBVA_DRIVER_NAME=nvidia NVD_BACKEND=direct MOZ_DISABLE_RDD_SANDBOX=1 MOZ_ENABLE_WAYLAND=1 ${pkgs.firefox}/bin/firefox %U";
+        icon = "firefox";
+        terminal = false;
+        categories = [
+          "Network"
+          "WebBrowser"
+        ];
+        mimeType = [
+          "text/html"
+          "application/xhtml+xml"
+          "x-scheme-handler/http"
+          "x-scheme-handler/https"
+        ];
+      };
     };
 
   dconf.settings."org/gnome/shell" = {
     disable-user-extensions = false;
     enabled-extensions = [
-      "Vitals@CoreCoding.com"
       "just-perfection-desktop@just-perfection"
       "quick-settings-audio-panel@rayzeq.github.io"
     ];
@@ -308,24 +343,6 @@ in {
     show-screenshot-ui = [
       "Print"
       "<Super><Shift>s"
-    ];
-  };
-
-  dconf.settings."org/gnome/shell/extensions/vitals" = {
-    show-temperature = false;
-    show-voltage = false;
-    show-fan = false;
-    show-system = false;
-    show-storage = false;
-    show-network = false;
-    show-battery = false;
-    show-memory = true;
-    show-processor = true;
-    show-gpu = true;
-    hot-sensors = [
-      "_memory_usage_"
-      "_processor_usage_"
-      "_gpu#1_graphics_"
     ];
   };
 

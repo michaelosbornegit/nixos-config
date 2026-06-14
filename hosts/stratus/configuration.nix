@@ -42,9 +42,12 @@
   };
 
   programs = {
+    gamemode.enable = true;
+    gamescope.enable = true;
     virt-manager.enable = true;
     steam = {
       enable = true;
+      gamescopeSession.enable = true;
       remotePlay.openFirewall = true;
       dedicatedServer.openFirewall = true;
       localNetworkGameTransfers.openFirewall = true;
@@ -64,6 +67,7 @@
     pathsToLink = ["/share/zsh"];
     systemPackages = with pkgs; [
       f3d
+      mangohud
     ];
   };
 

@@ -12,8 +12,6 @@
   # programs.firefox.enable = true;
 
   home.packages = with pkgs; [
-    # microsoft-edge If this is ever available for aarch64 darwin
-
     # utilities
     coreutils-prefixed
     gh

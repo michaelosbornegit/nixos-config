@@ -1,12 +1,12 @@
 [Added Associations]
-text/html=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
-application/xhtml+xml=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
-x-scheme-handler/http=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
-x-scheme-handler/https=com.microsoft.Edge.desktop;com.google.Chrome.desktop;
+text/html=firefox.desktop;
+application/xhtml+xml=firefox.desktop;
+x-scheme-handler/http=firefox.desktop;
+x-scheme-handler/https=firefox.desktop;
 application/octet-stream=org.gnome.TextEditor.desktop;
-image/gif=org.gnome.Loupe.desktop;microsoft-edge.desktop;
-image/webp=org.gnome.Loupe.desktop;microsoft-edge.desktop;
-image/png=microsoft-edge.desktop;org.gnome.Loupe.desktop;
+image/gif=org.gnome.Loupe.desktop;
+image/webp=org.gnome.Loupe.desktop;
+image/png=org.gnome.Loupe.desktop;
 application/vnd.3ds=f3d-plugin-native.desktop;
 application/vnd.brep=f3d-plugin-occt.desktop;
 application/vnd.dae=f3d-plugin-assimp.desktop;
@@ -50,10 +50,10 @@ application/netcdf=f3d-plugin-hdf.desktop;
 application/vnd.x=f3d-plugin-assimp.desktop;
 
 [Default Applications]
-text/html=com.microsoft.Edge.desktop
-application/xhtml+xml=com.microsoft.Edge.desktop
-x-scheme-handler/http=com.microsoft.Edge.desktop
-x-scheme-handler/https=com.microsoft.Edge.desktop
+text/html=firefox.desktop
+application/xhtml+xml=firefox.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
 image/png=org.gnome.Loupe.desktop
 image/jpeg=org.gnome.Loupe.desktop
 image/gif=org.gnome.Loupe.desktop

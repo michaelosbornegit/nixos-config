@@ -9,6 +9,165 @@
 }: let
   repoFlake = "/home/${user}/development/repos/nixos-config";
   hostLazyPackagesPath = "${repoFlake}/hosts/stratus/lazy-packages.nix";
+  gamemoderun = "${pkgs.gamemode}/bin/gamemoderun";
+  lazyNixBuild = pkgs.writeShellApplication {
+    name = "lazy-nix-build";
+    runtimeInputs = with pkgs; [
+      coreutils
+      gawk
+      zenity
+    ];
+    text = builtins.readFile ./lazy-nix-build.sh;
+  };
+  robloxExperienceApplicationDir = "/home/${user}/.local/share/applications";
+  robloxExperienceIconDir = "/home/${user}/.local/share/icons/hicolor/512x512/apps";
+  robloxExperiences = {
+    fishos = {
+      command = "roblox-fishos";
+      desktopId = "roblox-fishos";
+      fallbackName = "FISH.OS";
+      fallbackComment = "Launch FISH.OS in Sober";
+      icon = "roblox-fishos";
+      placeId = "123368132872113";
+      keywords = [
+        "fish"
+        "fishos"
+        "fish.os"
+        "fishing"
+        "roblox"
+        "sober"
+      ];
+    };
+    petSimulator = {
+      command = "roblox-pet-simulator";
+      desktopId = "roblox-pet-simulator";
+      fallbackName = "Pet Simulator 99";
+      fallbackComment = "Launch Pet Simulator 99 in Sober";
+      icon = "roblox-pet-simulator";
+      placeId = "8737899170";
+      keywords = [
+        "pets"
+        "pet simulator"
+        "pet sim"
+        "ps99"
+        "roblox"
+        "sober"
+      ];
+    };
+  };
+  robloxExperiencePlaceIds =
+    lib.concatStringsSep ","
+    (map (experience: experience.placeId) (lib.attrValues robloxExperiences));
+  robloxExperienceUpdater = pkgs.writeShellApplication {
+    name = "roblox-refresh-experiences";
+    runtimeInputs = with pkgs; [
+      coreutils
+      curl
+      gnused
+      jq
+    ];
+    text = ''
+      application_dir=${lib.escapeShellArg robloxExperienceApplicationDir}
+      icon_dir=${lib.escapeShellArg robloxExperienceIconDir}
+      mkdir -p "$application_dir"
+      mkdir -p "$icon_dir"
+      rm -f "$application_dir/roblox-pets.desktop"
+
+      desktop_escape() {
+        printf '%s' "$1" \
+          | tr '\r\n' '  ' \
+          | sed 's/[[:cntrl:]]//g; s/\\/\\\\/g'
+      }
+
+      thumbnail_response="$(
+        curl --fail --silent --show-error --location \
+          ${lib.escapeShellArg "https://thumbnails.roblox.com/v1/places/gameicons?placeIds=${robloxExperiencePlaceIds}&size=512x512&format=Png&isCircular=false"} \
+          || true
+      )"
+
+      universe_ids=""
+      ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: experience: ''
+          universe_id="$(
+            curl --fail --silent --show-error --location \
+              ${lib.escapeShellArg "https://apis.roblox.com/universes/v1/places/${experience.placeId}/universe"} \
+              | jq --raw-output '.universeId // empty' \
+              || true
+          )"
+          if [ -n "$universe_id" ]; then
+            if [ -n "$universe_ids" ]; then
+              universe_ids="$universe_ids,$universe_id"
+            else
+              universe_ids="$universe_id"
+            fi
+          fi
+        '')
+        robloxExperiences)}
+
+      games_response='{"data":[]}'
+      if [ -n "$universe_ids" ]; then
+        games_response="$(
+          curl --fail --silent --show-error --location \
+            "https://games.roblox.com/v1/games?universeIds=$universe_ids" \
+            || printf '{"data":[]}'
+        )"
+      fi
+
+      ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: experience: ''
+          image_url="$(
+            printf '%s' "$thumbnail_response" \
+              | jq --raw-output --arg target ${lib.escapeShellArg experience.placeId} \
+                '.data[] | select((.targetId | tostring) == $target) | select(.state == "Completed") | .imageUrl' \
+              | head -n 1 \
+              || true
+          )"
+          if [ -n "$image_url" ] && [ "$image_url" != "null" ]; then
+            tmp="$icon_dir/${experience.icon}.png.tmp"
+            if curl --fail --silent --show-error --location "$image_url" --output "$tmp"; then
+              mv "$tmp" "$icon_dir/${experience.icon}.png"
+            else
+              rm -f "$tmp"
+            fi
+          fi
+
+          raw_name="$(
+            printf '%s' "$games_response" \
+              | jq --raw-output --arg place ${lib.escapeShellArg experience.placeId} \
+                '.data[] | select((.rootPlaceId | tostring) == $place) | .name // empty' \
+              | head -n 1 \
+              || true
+          )"
+          if [ -z "$raw_name" ] || [ "$raw_name" = "null" ]; then
+            raw_name=${lib.escapeShellArg experience.fallbackName}
+          fi
+
+          name="$(desktop_escape "$raw_name")"
+          comment="$(desktop_escape ${lib.escapeShellArg experience.fallbackComment})"
+          keywords=${lib.escapeShellArg (lib.concatStringsSep ";" experience.keywords + ";")}
+
+          {
+            printf '%s\n' '[Desktop Entry]'
+            printf '%s\n' 'Type=Application'
+            printf '%s\n' 'Version=1.5'
+            printf 'Name=%s\n' "$name"
+            printf 'Comment=%s\n' "$comment"
+            printf '%s\n' 'Exec=${experience.command}'
+            printf '%s\n' 'Icon=${experience.icon}'
+            printf '%s\n' 'Terminal=false'
+            printf '%s\n' 'Categories=Game;'
+            printf '%s\n' 'StartupNotify=true'
+            printf '%s\n' 'PrefersNonDefaultGPU=true'
+            printf 'Keywords=%s\n' "$keywords"
+          } >"$application_dir/${experience.desktopId}.desktop"
+        '')
+        robloxExperiences)}
+    '';
+  };
+  robloxSoberLaunchScript = experience: ''
+    ${robloxExperienceUpdater}/bin/roblox-refresh-experiences >/dev/null 2>&1 || true
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    flatpak install -y flathub org.vinegarhq.Sober
+    exec ${gamemoderun} flatpak run --command=sober org.vinegarhq.Sober ${lib.escapeShellArg "roblox://placeId=${experience.placeId}"}
+  '';
   mkHostLazyPackageExpr = packageAttr:
     lib.escapeShellArg ''
       let
@@ -17,29 +176,84 @@
           system = builtins.currentSystem;
           config.allowUnfree = true;
         };
+        beammp = flake.inputs.beammp;
+        codexDesktopLinux = flake.inputs.codex-desktop-linux;
       in
-      (import "${hostLazyPackagesPath}" { inherit pkgs; }).${packageAttr}
+      (import "${hostLazyPackagesPath}" { inherit pkgs beammp codexDesktopLinux; }).${packageAttr}
     '';
   lazyGuiApps = {
+    beammp = {
+      desktopName = "BeamMP";
+      comment = "Launch BeamMP in a terminal";
+      icon = "beamng-drive";
+      categories = [
+        "Game"
+      ];
+      execArg = "";
+      packageAttr = "beammp";
+      gameMode = true;
+      terminal = true;
+    };
+    beammp-doctor = {
+      desktopName = "BeamMP Doctor";
+      packageAttr = "beammp-doctor";
+      desktopEntry = false;
+    };
+    beammp-link = {
+      desktopName = "BeamMP Link";
+      packageAttr = "beammp-link";
+      desktopEntry = false;
+    };
+    beammp-proton = {
+      desktopName = "BeamMP Proton";
+      packageAttr = "beammp-proton";
+      desktopEntry = false;
+    };
+    roblox-fishos = {
+      desktopName = robloxExperiences.fishos.fallbackName;
+      comment = robloxExperiences.fishos.fallbackComment;
+      icon = robloxExperiences.fishos.icon;
+      categories = [
+        "Game"
+      ];
+      execArg = "";
+      execScript = robloxSoberLaunchScript robloxExperiences.fishos;
+      desktopEntry = false;
+    };
+    roblox-pet-simulator = {
+      desktopName = robloxExperiences.petSimulator.fallbackName;
+      comment = robloxExperiences.petSimulator.fallbackComment;
+      icon = robloxExperiences.petSimulator.icon;
+      categories = [
+        "Game"
+      ];
+      execArg = "";
+      execScript = robloxSoberLaunchScript robloxExperiences.petSimulator;
+      desktopEntry = false;
+    };
     ps2 = {
       desktopName = "PlayStation 2";
       comment = "PlayStation 2 emulator";
-      icon = "pcsx2";
+      icon = "PCSX2";
+      desktopId = "PCSX2";
       categories = [
         "Game"
       ];
       execArg = "%F";
       packageAttr = "ps2";
+      gameMode = true;
     };
     retroarch = {
       desktopName = "RetroArch";
       comment = "Frontend for emulators and game engines";
       icon = "com.libretro.RetroArch";
+      desktopId = "com.libretro.RetroArch";
       categories = [
         "Game"
       ];
       execArg = "%F";
       packageAttr = "retroarch";
+      gameMode = true;
     };
     snes = {
       desktopName = "Super Nintendo";
@@ -50,11 +264,13 @@
       ];
       execArg = "%F";
       packageAttr = "snes";
+      gameMode = true;
     };
     parsec = {
       desktopName = "Parsec";
       comment = "Remote desktop and game streaming";
       icon = "parsec";
+      desktopId = "parsecd";
       categories = [
         "Network"
         "RemoteAccess"
@@ -66,11 +282,13 @@
       desktopName = "GameCube";
       comment = "GameCube and Wii emulator";
       icon = "dolphin-emu";
+      desktopId = "org.DolphinEmu.dolphin-emu";
       categories = [
         "Game"
       ];
       execArg = "%F";
       packageAttr = "gamecube";
+      gameMode = true;
     };
     kdiskmark = {
       desktopName = "KDiskMark";
@@ -87,6 +305,7 @@
       desktopName = "Bottles";
       comment = "Run Windows software and games";
       icon = "com.usebottles.bottles";
+      desktopId = "com.usebottles.bottles";
       categories = [
         "Utility"
       ];
@@ -111,6 +330,7 @@
       desktopName = "OBS Studio";
       comment = "Streaming and recording software";
       icon = "com.obsproject.Studio";
+      desktopId = "com.obsproject.Studio";
       categories = [
         "AudioVideo"
         "Recorder"
@@ -122,6 +342,7 @@
       desktopName = "Kdenlive";
       comment = "Video editor";
       icon = "kdenlive";
+      desktopId = "org.kde.kdenlive";
       categories = [
         "AudioVideo"
         "Video"
@@ -133,18 +354,22 @@
     plex-desktop = {
       desktopName = "Plex";
       comment = "Plex desktop client";
-      icon = "plex";
+      icon = "plex-desktop";
       categories = [
         "AudioVideo"
         "Video"
       ];
       execArg = "%U";
       packageAttr = "plex-desktop";
+      settings = {
+        StartupWMClass = "Plex";
+      };
     };
     discord = {
       desktopName = "Vesktop";
       comment = "Chat client with Linux screen sharing support";
       icon = "vesktop";
+      desktopId = "vesktop";
       categories = [
         "Network"
         "InstantMessaging"
@@ -152,6 +377,9 @@
       execArg = "%U";
       binary = "vesktop";
       packageAttr = "vesktop";
+      settings = {
+        StartupWMClass = "Vesktop";
+      };
     };
     google-chrome = {
       desktopName = "Google Chrome";
@@ -165,6 +393,19 @@
       binary = "google-chrome-stable";
       packageAttr = "google-chrome";
     };
+    scrcpy = {
+      desktopName = "scrcpy";
+      comment = "Display and control your Android device";
+      icon = "guiscrcpy";
+      desktopId = "scrcpy";
+      categories = [
+        "Utility"
+        "RemoteAccess"
+      ];
+      execArg = "";
+      packageAttr = "scrcpy";
+      startupNotify = false;
+    };
     prismlauncher = {
       desktopName = "Prism Launcher";
       comment = "Minecraft launcher";
@@ -174,16 +415,64 @@
       ];
       execArg = "%U";
       packageAttr = "prismlauncher";
+      desktopEntry = false;
     };
     minecraft = {
       desktopName = "Minecraft";
       comment = "Minecraft launcher";
       icon = "minecraft";
+      desktopId = "org.prismlauncher.PrismLauncher";
       categories = [
         "Game"
       ];
       execArg = "%U";
       packageAttr = "minecraft";
+      gameMode = true;
+      settings = {
+        StartupWMClass = "org.prismlauncher.PrismLauncher";
+      };
+    };
+    osrs = {
+      desktopName = "Old School RuneScape";
+      comment = "RuneLite Old School RuneScape client";
+      icon = "runelite";
+      desktopId = "RuneLite";
+      categories = [
+        "Game"
+      ];
+      execArg = "%U";
+      binary = "runelite";
+      packageAttr = "runelite";
+      gameMode = true;
+      settings = {
+        StartupWMClass = "net-runelite-client-RuneLite";
+      };
+    };
+    codex-app = {
+      desktopName = "Codex Desktop";
+      comment = "Run Codex Desktop on Linux";
+      icon = "codex-desktop";
+      desktopId = "codex-desktop";
+      categories = [
+        "Development"
+      ];
+      execArg = "%U";
+      packageAttr = "codex-app";
+      startupNotify = true;
+      settings = {
+        StartupWMClass = "codex-desktop";
+        X-GNOME-WMClass = "codex-desktop";
+      };
+      mimeType = [
+        "x-scheme-handler/codex"
+        "x-scheme-handler/codex-browser-sidebar"
+      ];
+      actions = {
+        new-window = {
+          name = "New Window";
+          exec = "codex-app --new-instance";
+        };
+      };
     };
     xclicker = {
       desktopName = "XClicker";
@@ -203,8 +492,8 @@
     pkgs.writeShellScriptBin command (
       if cfg ? packageAttr
       then ''
-        result="$(nix build --impure --no-link --print-out-paths --expr ${hostLazyPackageExpr})"
-        exec "$result/bin/${cfg.binary or command}" "$@"
+        result="$(${lazyNixBuild}/bin/lazy-nix-build ${lib.escapeShellArg cfg.desktopName} ${hostLazyPackageExpr})" || exit $?
+        exec ${lib.optionalString (cfg.gameMode or false) "${gamemoderun} "}"$result/bin/${cfg.binary or command}" "$@"
       ''
       else if cfg ? execScript
       then cfg.execScript
@@ -214,17 +503,35 @@
     );
 
   mkDesktopEntry = command: cfg:
-    {
-      name = cfg.desktopName;
-      comment = cfg.comment;
-      exec = "${command} ${cfg.execArg}";
-      icon = cfg.icon;
-      terminal = false;
-      categories = cfg.categories;
-    }
-    // lib.optionalAttrs (cfg ? mimeType) {
-      mimeType = cfg.mimeType;
-    };
+    lib.nameValuePair (cfg.desktopId or command) (
+      {
+        name = cfg.desktopName;
+        comment = cfg.comment;
+        exec = "${command} ${cfg.execArg}";
+        icon = cfg.icon;
+        terminal = cfg.terminal or false;
+        categories = cfg.categories;
+      }
+      // lib.optionalAttrs (cfg ? mimeType) {
+        mimeType = cfg.mimeType;
+      }
+      // lib.optionalAttrs (cfg ? startupNotify) {
+        startupNotify = cfg.startupNotify;
+      }
+      // lib.optionalAttrs (cfg ? noDisplay) {
+        noDisplay = cfg.noDisplay;
+      }
+      // lib.optionalAttrs (cfg ? settings) {
+        settings = cfg.settings;
+      }
+      // lib.optionalAttrs (cfg ? actions) {
+        actions = cfg.actions;
+      }
+    );
+  lazyDesktopEntries =
+    lib.listToAttrs
+    (lib.mapAttrsToList mkDesktopEntry
+      (lib.filterAttrs (_: cfg: cfg.desktopEntry or true) lazyGuiApps));
 in {
   imports = [
     inputs.slippi.homeManagerModules.default
@@ -242,7 +549,6 @@ in {
       gh
       esptool # for interacting with esp32 boards
       # apps
-      scrcpy
       # prusa-slicer
       # mongodb-compass
       # code-cursor
@@ -254,8 +560,13 @@ in {
       ghostty
       gnomeExtensions.just-perfection
       gnomeExtensions.quick-settings-audio-panel
+      robloxExperienceUpdater
     ]
     ++ lib.mapAttrsToList mkLazyCommand lazyGuiApps;
+
+  home.activation.updateRobloxExperienceLaunchers = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${robloxExperienceUpdater}/bin/roblox-refresh-experiences || true
+  '';
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
@@ -300,18 +611,8 @@ in {
   };
 
   xdg.desktopEntries =
-    lib.mapAttrs mkDesktopEntry lazyGuiApps
+    lazyDesktopEntries
     // {
-      beammp = {
-        name = "BeamMP";
-        comment = "Launch BeamMP in a terminal";
-        exec = inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp.program;
-        icon = "beamng-drive";
-        terminal = true;
-        categories = [
-          "Game"
-        ];
-      };
       firefox = {
         name = "Firefox";
         comment = "Access the Internet";
@@ -357,16 +658,12 @@ in {
   };
 
   programs.zsh.shellAliases = {
-    beammp = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp.program}";
-    beammp-doctor = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp-doctor.program}";
-    beammp-link = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp-link.program}";
-    beammp-proton = "${inputs.beammp.apps.${pkgs.stdenv.hostPlatform.system}.beammp-proton.program}";
-    melee = "nix run github:lytedev/slippi-nix#slippi-launcher";
+    melee = "${gamemoderun} nix run github:lytedev/slippi-nix#slippi-launcher";
     roblox = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
               flatpak install flathub org.vinegarhq.Sober && \
               flatpak update && \
-              flatpak run org.vinegarhq.Sober";
+              ${gamemoderun} flatpak run org.vinegarhq.Sober";
     gopher64 = "flatpak install -y flathub io.github.gopher64.gopher64 && \
-                flatpak run io.github.gopher64.gopher64";
+                ${gamemoderun} flatpak run io.github.gopher64.gopher64";
   };
 }

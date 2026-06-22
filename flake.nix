@@ -10,6 +10,9 @@
     beammp.url = "github:michaelosbornegit/beammp-nixos-flake";
     beammp.inputs.nixpkgs.follows = "nixpkgs";
 
+    codex-desktop-linux.url = "github:ilysenko/codex-desktop-linux";
+    codex-desktop-linux.inputs.nixpkgs.follows = "nixpkgs";
+
     # Track Home Manager master with nixos-unstable; release branches are only
     # for stable Nixpkgs channels.
     home-manager.url = "github:nix-community/home-manager/master";

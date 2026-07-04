@@ -180,7 +180,13 @@ in {
 
   programs.git = {
     enable = true;
-    settings.user.name = "Michael Osborne";
+    settings = {
+      user.name = "Michael Osborne";
+      credential = {
+        "https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+        "https://gist.github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+      };
+    };
   };
 
   programs.direnv = {

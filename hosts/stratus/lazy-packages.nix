@@ -78,6 +78,8 @@ in {
 
   plex-desktop = pkgs.plex-desktop;
 
+  discord = pkgs.discord;
+
   vesktop = pkgs.vesktop;
 
   google-chrome = pkgs.google-chrome;

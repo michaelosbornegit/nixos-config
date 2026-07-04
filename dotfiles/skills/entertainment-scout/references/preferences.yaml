@@ -1,0 +1,46 @@
+# Personal watch preferences for $entertainment-scout.
+# Keep this file small and explicit. Add favorite games, sports, teams, leagues,
+# regions, services, or avoid lists as the user's tastes become clearer.
+
+timezone: America/Chicago
+
+favorite_sports:
+  - college football
+  - NFL
+  - NBA
+
+favorite_esports_titles:
+  - Super Smash Bros.
+  - Counter-Strike 2
+  - Rocket League
+
+favorite_teams: []
+favorite_players: []
+favorite_leagues_or_tournaments: []
+
+watch_services: []
+regions:
+  preferred: ["US"]
+  acceptable: []
+
+discovery_bias: medium
+
+blind_spot_scan:
+  enabled: true
+  include: ["sports", "esports"]
+  max_picks: 3
+  threshold: "major_or_culturally_notable"
+  notes:
+    - "Reserve room for notable events outside favorites so recommendations do not become a filter bubble."
+    - "Do not include outside-preference picks unless there is a concrete hook: final, playoff, rivalry, major tournament, star matchup, huge audience, or unusual cultural moment."
+
+avoid:
+  sports: []
+  esports_titles: []
+  teams: []
+  leagues_or_tournaments: []
+
+notes:
+  - "Favor Super Smash Bros., Counter-Strike, Rocket League, college football, NFL, and NBA when building the main watch list."
+  - "Discovery picks should explain why a non-favorite event is culturally or competitively significant."
+  - "Blind-spot picks should stay selective; one truly notable outside-interest event beats several weak suggestions."

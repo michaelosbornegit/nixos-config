@@ -1,0 +1,4 @@
+interface:
+  display_name: "Entertainment Scout"
+  short_description: "Find worthwhile sports and esports to watch"
+  default_prompt: "Use $entertainment-scout to find the best sports and esports events worth watching this weekend, including notable blind-spot picks outside my usual preferences."

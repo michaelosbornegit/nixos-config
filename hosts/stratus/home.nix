@@ -10,6 +10,10 @@
   repoFlake = "/home/${user}/development/repos/nixos-config";
   hostLazyPackagesPath = "${repoFlake}/hosts/stratus/lazy-packages.nix";
   gamemoderun = "${pkgs.gamemode}/bin/gamemoderun";
+  flatpak = "${pkgs.flatpak}/bin/flatpak";
+  # Flatpak 1.18 leaks NixOS's host PATH into flatpak-spawn subsandboxes.
+  # Sober's glycin image loader expects FHS paths there, including /usr/bin.
+  flatpakRun = "env PATH=/usr/bin:/bin ${flatpak}";
   lazyNixBuild = pkgs.writeShellApplication {
     name = "lazy-nix-build";
     runtimeInputs = with pkgs; [
@@ -164,9 +168,9 @@
   };
   robloxSoberLaunchScript = experience: ''
     ${robloxExperienceUpdater}/bin/roblox-refresh-experiences >/dev/null 2>&1 || true
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    flatpak install -y flathub org.vinegarhq.Sober
-    exec ${gamemoderun} flatpak run --command=sober org.vinegarhq.Sober ${lib.escapeShellArg "roblox://placeId=${experience.placeId}"}
+    ${flatpak} remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    ${flatpak} install -y flathub org.vinegarhq.Sober
+    exec ${flatpakRun} run --command=sober org.vinegarhq.Sober ${lib.escapeShellArg "roblox://placeId=${experience.placeId}"}
   '';
   mkHostLazyPackageExpr = packageAttr:
     lib.escapeShellArg ''
@@ -366,6 +370,22 @@
       };
     };
     discord = {
+      desktopName = "Discord";
+      comment = "Chat client";
+      icon = "discord";
+      desktopId = "discord";
+      categories = [
+        "Network"
+        "InstantMessaging"
+      ];
+      execArg = "%U";
+      binary = "Discord";
+      packageAttr = "discord";
+      settings = {
+        StartupWMClass = "discord";
+      };
+    };
+    vesktop = {
       desktopName = "Vesktop";
       comment = "Chat client with Linux screen sharing support";
       icon = "vesktop";
@@ -636,7 +656,11 @@ in {
     disable-user-extensions = false;
     enabled-extensions = [
       "just-perfection-desktop@just-perfection"
-      "quick-settings-audio-panel@rayzeq.github.io"
+      # Temporarily disabled after GNOME Shell 50.2 started crashing at login in
+      # libgvc `_pa_context_get_card_info_by_index_cb`, which makes GNOME
+      # disable all extensions and breaks Just Perfection animation speed.
+      # Re-test after quick-settings-audio-panel or GNOME Shell updates.
+      # "quick-settings-audio-panel@rayzeq.github.io"
     ];
   };
 
@@ -659,10 +683,10 @@ in {
 
   programs.zsh.shellAliases = {
     melee = "${gamemoderun} nix run github:lytedev/slippi-nix#slippi-launcher";
-    roblox = "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
-              flatpak install flathub org.vinegarhq.Sober && \
-              flatpak update && \
-              ${gamemoderun} flatpak run org.vinegarhq.Sober";
+    roblox = "${flatpak} remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo && \
+              ${flatpak} install flathub org.vinegarhq.Sober && \
+              ${flatpak} update && \
+              ${flatpakRun} run org.vinegarhq.Sober";
     gopher64 = "flatpak install -y flathub io.github.gopher64.gopher64 && \
                 ${gamemoderun} flatpak run io.github.gopher64.gopher64";
   };

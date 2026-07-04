@@ -1,0 +1,183 @@
+# Living source registry for $entertainment-scout.
+# Prefer primary/official and specialist schedule pages. Add more games and
+# leagues over time as the user asks for them.
+
+sports:
+  blind_spot_sources:
+    schedules_and_scores:
+      - name: ESPN Watch Schedule
+        url: https://www.espn.com/watch/schedule
+        notes: "Broad live/upcoming sports viewing schedule; useful for spotting mainstream events."
+      - name: TheSportsDB API docs
+        url: https://www.thesportsdb.com/docs_api_guide
+        notes: "Broad sports schedule API reference for production or structured lookups."
+    notability_searches:
+      - "biggest sports events this weekend {date range}"
+      - "major sports events today TV streaming {date range}"
+      - "championship final playoff schedule sports {date range}"
+      - "ranked matchup rivalry game schedule {date range}"
+
+  general:
+    schedules_and_scores:
+      - name: TheSportsDB API docs
+        url: https://www.thesportsdb.com/docs_api_guide
+        notes: "Open sports database with event schedules, TV lookup, results, and highlights endpoints."
+      - name: SportsDataIO APIs
+        url: https://sportsdata.io/developers/apis
+        notes: "Commercial sports API coverage; useful for production app research."
+      - name: ESPN Watch Schedule
+        url: https://www.espn.com/watch/schedule
+        notes: "Consumer-facing watch schedule; verify regional availability."
+    context_searches:
+      - "{sport} upcoming schedule {date range}"
+      - "{league} standings playoff picture {season}"
+      - "{team} injury news rivalry stakes"
+
+  football:
+    schedules_and_scores:
+      - name: NFL schedule
+        url: https://www.nfl.com/schedules
+        notes: "Official NFL schedule."
+      - name: ESPN NFL schedule
+        url: https://www.espn.com/nfl/schedule
+        notes: "NFL schedule with TV and ticket information."
+      - name: ESPN college football schedule
+        url: https://www.espn.com/college-football/schedule
+        notes: "College football schedule with TV listings and conference filters."
+    context_searches:
+      - "NFL schedule this week TV streaming"
+      - "college football schedule rankings rivalry stakes"
+
+  basketball:
+    schedules_and_scores:
+      - name: NBA schedule
+        url: https://www.nba.com/schedule
+        notes: "Official NBA schedule."
+      - name: ESPN NBA schedule
+        url: https://www.espn.com/nba/schedule
+        notes: "NBA schedule with TV listings and ticket information."
+    context_searches:
+      - "NBA schedule tonight TV streaming"
+      - "WNBA schedule tonight TV streaming"
+      - "college basketball schedule ranked matchup"
+
+  motorsport:
+    context_searches:
+      - "Formula 1 race schedule practice qualifying grand prix"
+      - "IndyCar NASCAR schedule this weekend"
+
+esports:
+  blind_spot_sources:
+    schedules_and_scores:
+      - name: Liquipedia
+        url: https://liquipedia.net/
+        notes: "Broad esports tournament and match hub; useful for spotting major events across games."
+      - name: Liquipedia API
+        url: https://liquipedia.net/api
+        notes: "Structured esports data path for broad cross-title discovery."
+    notability_searches:
+      - "biggest esports tournaments this weekend {date range}"
+      - "major esports events today stream schedule {date range}"
+      - "esports grand final schedule prize pool {date range}"
+      - "upcoming esports major tournament playoffs {date range}"
+
+  general:
+    schedules_and_scores:
+      - name: Liquipedia
+        url: https://liquipedia.net/
+        notes: "Broad esports wiki for tournaments, matches, standings, streams, and context."
+      - name: Liquipedia API
+        url: https://liquipedia.net/api
+        notes: "Commercial/API path for structured esports data; useful for production app research."
+    context_searches:
+      - "{game} esports schedule {date range}"
+      - "{tournament} prize pool format teams"
+      - "{team} roster news {game}"
+
+  valorant:
+    schedules_and_scores:
+      - name: VALORANT Esports
+        url: https://valorantesports.com/
+        notes: "Official Riot VALORANT esports schedule and news."
+      - name: VLR matches
+        url: https://www.vlr.gg/matches
+        notes: "Specialist VALORANT match schedule, event stages, and community context."
+      - name: VLR events
+        url: https://www.vlr.gg/events
+        notes: "Specialist VALORANT event calendar."
+      - name: Riot Esports Data
+        url: https://riotesportsdata.com/
+        notes: "Official Riot esports data products for VALORANT and League of Legends."
+    context_searches:
+      - "VALORANT Champions Tour schedule {date range}"
+      - "VCT standings playoff qualification stakes"
+
+  league_of_legends:
+    schedules_and_scores:
+      - name: LoL Esports Schedule
+        url: https://lolesports.com/schedule
+        notes: "Official Riot League of Legends esports schedule."
+      - name: Riot Esports Data
+        url: https://riotesportsdata.com/
+        notes: "Official Riot esports data products for League of Legends and VALORANT."
+    context_searches:
+      - "LoL esports schedule {date range}"
+      - "LCS LEC LCK LPL standings playoff stakes"
+
+  counter_strike:
+    schedules_and_scores:
+      - name: HLTV matches
+        url: https://www.hltv.org/matches
+        notes: "Primary specialist source for upcoming Counter-Strike matches."
+      - name: HLTV events
+        url: https://www.hltv.org/events
+        notes: "Ongoing and upcoming Counter-Strike tournaments."
+      - name: HLTV calendar
+        url: https://www.hltv.org/calendar
+        notes: "Top-tier Counter-Strike event calendar."
+    context_searches:
+      - "CS2 tournament schedule {date range}"
+      - "HLTV rankings matchup stakes"
+
+  super_smash_bros:
+    schedules_and_scores:
+      - name: start.gg tournaments
+        url: https://www.start.gg/search/tournaments
+        notes: "Tournament search for Super Smash Bros. Ultimate, Melee, and related events."
+      - name: Liquipedia Smash
+        url: https://liquipedia.net/smash/Main_Page
+        notes: "Smash tournament hub and event context."
+      - name: r/smashbros events wiki
+        url: https://www.reddit.com/r/smashbros/wiki/events/
+        notes: "Community-maintained list of major upcoming Smash events; verify against event pages."
+    context_searches:
+      - "Super Smash Bros major tournament schedule {date range}"
+      - "Smash Ultimate Melee major tournament stream schedule {date range}"
+      - "start.gg Super Smash Bros tournament {date range}"
+
+  dota_2:
+    schedules_and_scores:
+      - name: Liquipedia Dota 2
+        url: https://liquipedia.net/dota2/Main_Page
+        notes: "Dota 2 tournament and match hub."
+    context_searches:
+      - "Dota 2 esports schedule {date range}"
+      - "Dota 2 tournament prize pool teams standings"
+
+  rocket_league:
+    schedules_and_scores:
+      - name: Liquipedia Rocket League
+        url: https://liquipedia.net/rocketleague/Main_Page
+        notes: "Rocket League tournament and match hub."
+    context_searches:
+      - "Rocket League esports schedule {date range}"
+      - "RLCS standings event schedule"
+
+  fighting_games:
+    schedules_and_scores:
+      - name: start.gg
+        url: https://www.start.gg/
+        notes: "Tournament listings and brackets for many fighting game events."
+    context_searches:
+      - "fighting game tournament schedule {date range}"
+      - "FGC major tournament stream schedule {date range}"

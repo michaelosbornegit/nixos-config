@@ -39,8 +39,15 @@ in {
       fd # for file finding
       bat # for file previewing
       wget # for wgetting
-      nodejs
+      nodejs_24
       pnpm
+      (writeShellApplication {
+        name = "vercel";
+        runtimeInputs = [nodejs_24];
+        text = ''
+          exec npx --yes vercel@latest "$@"
+        '';
+      })
       # Open Search and open files by contents in VSCode
       (writeShellApplication {
         name = "textsearch";

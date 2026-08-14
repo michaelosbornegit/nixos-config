@@ -1,0 +1,83 @@
+#!/bin/sh
+# Tint the Ghostty background to signal what Claude Code is doing.
+#
+#   ghostty-bg working    green  -- Claude is busy (tools, subagents, workflows)
+#   ghostty-bg idle       rose   -- turn finished, your move
+#   ghostty-bg attention  rose   -- needs a permission decision or an answer
+#   ghostty-bg reset      none   -- back to the Ghostty theme background
+#
+# Wired to hooks in ~/.claude/settings.json. Run `~/.claude/ghostty-bg reset`
+# from any shell to clear a tint left behind by a crashed session.
+#
+# Colours live in ~/.claude/ghostty-bg.conf. Create ~/.claude/no-bg-tint to
+# switch the whole thing off without unwiring the hooks.
+
+BG_WORKING='#f3fbf3'
+BG_IDLE='#fff7f9'
+BG_ATTENTION='#fff7f9'
+BG_DEFAULT='#f9f9f9'
+
+state="$1"
+
+CONF="$HOME/.claude/ghostty-bg.conf"
+[ -f "$CONF" ] && . "$CONF"
+
+# `reset` deliberately ignores the off switch: creating no-bg-tint while a tint
+# is on screen would otherwise leave it stranded with no way to clear it.
+if [ "$state" != reset ] && [ -f "$HOME/.claude/no-bg-tint" ]; then
+  exit 0
+fi
+
+# Ghostty only. A multiplexer would tint the whole window rather than the pane,
+# so bail out rather than do something surprising.
+[ -n "$TMUX" ] && exit 0
+[ -n "$ZELLIJ" ] && exit 0
+[ -n "$ZELLIJ_SESSION_NAME" ] && exit 0
+[ -n "$STY" ] && exit 0
+case "$TERM_PROGRAM|$TERM|$GHOSTTY_RESOURCES_DIR" in
+  *ghostty*|*Ghostty*) ;;
+  *) exit 0 ;;
+esac
+
+case "$state" in
+  working)   color="$BG_WORKING" ;;
+  idle)      color="$BG_IDLE" ;;
+  attention) color="$BG_ATTENTION" ;;
+  reset)     color="$BG_DEFAULT" ;;
+  *)         exit 0 ;;
+esac
+
+# Hooks are spawned without a controlling terminal (/dev/tty is "device not
+# configured"), so walk up the process tree to the ancestor that still owns
+# one -- normally the claude process itself.
+tty_path=''
+pid=$$
+i=0
+while [ "$i" -lt 10 ]; do
+  i=$((i + 1))
+  info=$(ps -o ppid=,tty= -p "$pid" 2>/dev/null | awk 'NR==1{print $1" "$2}')
+  [ -z "$info" ] && break
+  parent=${info% *}
+  term=${info#* }
+  # macOS prints "ttys005" and "??" for none; Linux prints "pts/3" and a single "?".
+  case "$term" in
+    ''|'?'|'??') ;;
+    *) tty_path="/dev/$term"; break ;;
+  esac
+  case "$parent" in
+    ''|*[!0-9]*) break ;;
+  esac
+  [ "$parent" -le 1 ] && break
+  pid="$parent"
+done
+
+if [ -f "$HOME/.claude/ghostty-bg.debug" ]; then
+  printf '%s %-9s %-14s %s\n' "$(date +%T)" "$state" "${tty_path:-NO-TTY}" "$color" \
+    >> "$HOME/.claude/ghostty-bg.log"
+fi
+
+# Nothing may reach stdout -- UserPromptSubmit would inject it as context.
+[ -n "$tty_path" ] || exit 0
+[ -w "$tty_path" ] || exit 0
+printf '\033]11;%s\007' "$color" > "$tty_path" 2>/dev/null
+exit 0

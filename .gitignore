@@ -1,6 +1,9 @@
 # Ignore Codex system skills (auto-generated)
 dotfiles/skills/.system/
 
+# Work skills live outside this repo (symlinked in from .agents/)
+dotfiles/skills/blankmetal*
+
 dotfiles/skills/blank-metal-design/
 dotfiles/skills/hatch-pet/
 

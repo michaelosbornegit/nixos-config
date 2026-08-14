@@ -1,0 +1,36 @@
+{
+  "SessionStart": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" idle"
+  },
+  "UserPromptSubmit": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" working"
+  },
+  "PostToolUse": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" working",
+    "async": true
+  },
+  "PostToolUseFailure": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" working",
+    "async": true
+  },
+  "Notification": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" attention"
+  },
+  "Stop": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" idle"
+  },
+  "StopFailure": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" idle"
+  },
+  "SessionEnd": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" reset"
+  }
+}

@@ -19,7 +19,9 @@ in {
 
     file = {
       ".p10k-config".source = ../dotfiles/.p10k-config;
-      ".config/ghostty/config".source = ../dotfiles/.config/ghostty/config;
+      # mkOutOfStoreSymlink rather than a store copy so theme and keybind tweaks
+      # take effect on Ghostty reload and flow back to git, with no rebuild.
+      ".config/ghostty/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.config/ghostty/config";
       # AI coding assistant instructions - using mkOutOfStoreSymlink so edits flow back to git
       ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
       ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
@@ -28,6 +30,12 @@ in {
       # Codex will recreate its .system/ skills inside the symlinked directory
       ".claude/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills";
       ".codex/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills";
+      # Tints the Ghostty background to show Claude Code state: green while it works,
+      # rose while it waits on you. Driven by hooks in ~/.claude/settings.json, which
+      # is deliberately left unmanaged so Claude Code can still write to it.
+      # Colours are tuned in the .conf; edits flow back to git.
+      ".claude/ghostty-bg".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg";
+      ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
     };
 
     packages = with pkgs; [
@@ -89,7 +97,7 @@ in {
     shellAliases = {
       osupdate = "(cd ~/development/repos/nixos-config && git pull && nix flake update)";
       osupgrade =
-        if pkgs.stdenv.isDarwin
+        if pkgs.stdenv.hostPlatform.isDarwin
         then "(cd ~/development/repos/nixos-config && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
         else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
       osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";

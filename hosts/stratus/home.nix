@@ -294,17 +294,6 @@
       packageAttr = "gamecube";
       gameMode = true;
     };
-    kdiskmark = {
-      desktopName = "KDiskMark";
-      comment = "Disk benchmark tool";
-      icon = "kdiskmark";
-      categories = [
-        "System"
-        "Utility"
-      ];
-      execArg = "%U";
-      packageAttr = "kdiskmark";
-    };
     bottles = {
       desktopName = "Bottles";
       comment = "Run Windows software and games";
@@ -595,6 +584,9 @@ in {
     enable = true;
     configPath = ".mozilla/firefox";
     profiles.default.settings = {
+      # Keep Firefox tabs out of GNOME's MPRIS media controls. Publishing every
+      # player here caused desktop-wide stalls when tracks changed.
+      "media.hardwaremediakeys.enabled" = false;
       "media.ffmpeg.vaapi.enabled" = true;
       "media.hardware-video-decoding.force-enabled" = true;
       "media.rdd-ffmpeg.enabled" = true;
@@ -656,11 +648,9 @@ in {
     disable-user-extensions = false;
     enabled-extensions = [
       "just-perfection-desktop@just-perfection"
-      # Temporarily disabled after GNOME Shell 50.2 started crashing at login in
-      # libgvc `_pa_context_get_card_info_by_index_cb`, which makes GNOME
-      # disable all extensions and breaks Just Perfection animation speed.
-      # Re-test after quick-settings-audio-panel or GNOME Shell updates.
-      # "quick-settings-audio-panel@rayzeq.github.io"
+      # Retrying with upstream v103 after v102 triggered a GNOME Shell 50.2
+      # libgvc crash. Remove this UUID first if the login crash returns.
+      "quick-settings-audio-panel@rayzeq.github.io"
     ];
   };
 

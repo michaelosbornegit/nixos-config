@@ -7,6 +7,7 @@
 }: {
   imports = [
     ./hardware-configuration.nix
+    ./hermes-vm.nix
     ../../modules/nixos/default.nix
     ../gnome.nix
     inputs.slippi.nixosModules.default
@@ -67,6 +68,7 @@
     pathsToLink = ["/share/zsh"];
     systemPackages = with pkgs; [
       f3d
+      kdiskmark
       mangohud
     ];
   };

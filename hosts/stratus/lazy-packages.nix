@@ -55,10 +55,6 @@ in {
     exec ${pkgs.dolphin-emu}/bin/dolphin-emu "$@"
   '';
 
-  kdiskmark = pkgs.writeShellScriptBin "kdiskmark" ''
-    exec ${pkgs.kdiskmark}/bin/kdiskmark "$@"
-  '';
-
   bottles = pkgs.bottles;
 
   blender = pkgs.blender.override {cudaSupport = true;};

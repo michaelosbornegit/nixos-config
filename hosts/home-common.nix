@@ -10,6 +10,32 @@
 }: let
   # Path to dotfiles in the repo - symlinks point here so edits flow back to git
   dotfilesPath = "${config.home.homeDirectory}/development/repos/nixos-config/dotfiles";
+
+  # Skills published from this (public) repo. Each is linked individually so
+  # ~/.claude/skills and ~/.codex/skills stay real directories: anything tools
+  # write there (skill sync, Codex .system/, work skills) never lands in git.
+  # To publish a skill, move it into dotfiles/skills/ and add it here and to
+  # the .gitignore allowlist.
+  publicSkills = [
+    "az-database-update"
+    "codex"
+    "create-doc"
+    "entertainment-scout"
+    "find-skills"
+    "ghostty-state-tint"
+    "glab"
+    "pr-review"
+    "pr-watcher"
+    "sim-debug"
+    "spawn-claude-subagent"
+    "todo"
+  ];
+  skillLinks = dir:
+    lib.listToAttrs (map (name: {
+        name = "${dir}/${name}";
+        value.source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills/${name}";
+      })
+      publicSkills);
 in {
   nixpkgs.config.allowUnfree = true;
 
@@ -26,17 +52,15 @@ in {
       ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
       ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
       ".gitlab/duo/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
-      # Shared skills directory - edits flow back to git
-      # Codex will recreate its .system/ skills inside the symlinked directory
-      ".claude/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills";
-      ".codex/skills".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills";
       # Tints the Ghostty background to show Claude Code state: green while it works,
       # rose while it waits on you. Driven by hooks in ~/.claude/settings.json, which
       # is deliberately left unmanaged so Claude Code can still write to it.
       # Colours are tuned in the .conf; edits flow back to git.
       ".claude/ghostty-bg".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg";
       ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
-    };
+    }
+    // skillLinks ".claude/skills"
+    // skillLinks ".codex/skills";
 
     packages = with pkgs; [
       zsh-powerlevel10k # zsh theme

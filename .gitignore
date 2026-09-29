@@ -1,12 +1,20 @@
-# Ignore Codex system skills (auto-generated)
-dotfiles/skills/.system/
+# Skills are private by default: only the ones listed here are published.
+# Keep in sync with publicSkills in hosts/home-common.nix.
+dotfiles/skills/*
+!dotfiles/skills/az-database-update/
+!dotfiles/skills/codex/
+!dotfiles/skills/create-doc/
+!dotfiles/skills/entertainment-scout/
+!dotfiles/skills/find-skills/
+!dotfiles/skills/ghostty-state-tint/
+!dotfiles/skills/glab/
+!dotfiles/skills/pr-review/
+!dotfiles/skills/pr-watcher/
+!dotfiles/skills/sim-debug/
+!dotfiles/skills/spawn-claude-subagent/
+!dotfiles/skills/todo/
 
-# Work skills live outside this repo (symlinked in from .agents/)
-dotfiles/skills/blankmetal*
-
-dotfiles/skills/blank-metal-design/
-dotfiles/skills/hatch-pet/
-
-dotfiles/skills/shippy-test/
+# Stray generated pages at the repo root
+/*.html
 
 .DS_Store

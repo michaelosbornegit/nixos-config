@@ -102,7 +102,6 @@ in {
         else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
       osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
       osoptimize = "sudo nix-store --optimize";
-      codex = "npx @openai/codex@latest --dangerously-bypass-approvals-and-sandbox";
     };
 
     initContent = lib.mkMerge [
@@ -118,6 +117,14 @@ in {
         fi
         bindkey '^[[A' fzf-history-widget
         bindkey '^[OA' fzf-history-widget
+      '')
+      (lib.mkOrder 600 ''
+        # codex ships no standalone binary; expose it as a function rather than
+        # an alias so other shell functions (codex-vercel in
+        # vercel-ai-gateway.nix) can call it normally.
+        codex() {
+          npx @openai/codex@latest --dangerously-bypass-approvals-and-sandbox "$@"
+        }
       '')
       ''
         # Prevent zsh-hist from rewriting multiline history into literal \n.
@@ -189,6 +196,8 @@ in {
         "chat.agent.maxRequests" = 100;
         # auto approve chat responses (yolo mode)
         "chat.tools.global.autoApprove" = true;
+        # don't prompt when opening files via file:// protocol
+        "security.promptForLocalFileProtocolHandling" = false;
       };
     };
   };

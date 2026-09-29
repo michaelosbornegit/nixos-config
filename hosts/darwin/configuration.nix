@@ -19,6 +19,8 @@
         imports = [
           ../home-common.nix
           ./home.nix
+          ./vercel-ai-gateway.nix
+          ./vercel-ai-gateway-toggle.nix
         ];
       };
     }

@@ -1,13 +1,32 @@
 #!/bin/sh
 # Tint the Ghostty background to signal what Claude Code is doing.
 #
-#   ghostty-bg working    green  -- Claude is busy (tools, subagents, workflows)
-#   ghostty-bg idle       rose   -- turn finished, your move
+#   ghostty-bg start      green  -- a turn or subagent began (counted)
+#   ghostty-bg end        rose*  -- a turn or subagent finished (counted)
+#   ghostty-bg working    green  -- still busy, just reasserting the tint
+#   ghostty-bg idle       rose   -- direct paint, uncounted (session bootstrap)
 #   ghostty-bg attention  rose   -- needs a permission decision or an answer
 #   ghostty-bg reset      none   -- back to the Ghostty theme background
 #
-# Wired to hooks in ~/.claude/settings.json. Run `~/.claude/ghostty-bg reset`
-# from any shell to clear a tint left behind by a crashed session.
+# start/end are reference-counted per tty (count file under
+# ~/.claude/ghostty-bg-state/): the main turn AND every subagent each
+# contribute one start+end pair, so a subagent finishing while the main
+# turn (or a sibling subagent) is still going doesn't flip the terminal
+# rose out from under ongoing work -- `end` only actually paints rose
+# once the count drops to zero. working/idle/attention are direct,
+# uncounted paints (don't touch the counter) -- working is PostToolUse
+# reasserting the tint mid-turn, which fires many times per turn and
+# would corrupt a counted model if it also incremented. reset always
+# clears the counter and bypasses it like the others.
+#
+# Wired to hooks in ~/.claude/settings.json:
+#   UserPromptSubmit, SubagentStart -> start
+#   Stop, StopFailure, SubagentStop -> end
+#   PostToolUse, PostToolUseFailure -> working
+#   SessionStart -> idle   Notification -> attention   SessionEnd -> reset
+#
+# Run `~/.claude/ghostty-bg reset` from any shell to clear a tint left
+# behind by a crashed session.
 #
 # Colours live in ~/.claude/ghostty-bg.conf. Create ~/.claude/no-bg-tint to
 # switch the whole thing off without unwiring the hooks.
@@ -40,6 +59,8 @@ case "$TERM_PROGRAM|$TERM|$GHOSTTY_RESOURCES_DIR" in
 esac
 
 case "$state" in
+  start)     color="$BG_WORKING" ;;
+  end)       color="$BG_IDLE" ;;
   working)   color="$BG_WORKING" ;;
   idle)      color="$BG_IDLE" ;;
   attention) color="$BG_ATTENTION" ;;
@@ -71,13 +92,44 @@ while [ "$i" -lt 10 ]; do
   pid="$parent"
 done
 
-if [ -f "$HOME/.claude/ghostty-bg.debug" ]; then
-  printf '%s %-9s %-14s %s\n' "$(date +%T)" "$state" "${tty_path:-NO-TTY}" "$color" \
-    >> "$HOME/.claude/ghostty-bg.log"
-fi
-
 # Nothing may reach stdout -- UserPromptSubmit would inject it as context.
-[ -n "$tty_path" ] || exit 0
-[ -w "$tty_path" ] || exit 0
-printf '\033]11;%s\007' "$color" > "$tty_path" 2>/dev/null
+if [ -n "$tty_path" ] && [ -w "$tty_path" ]; then
+  STATE_DIR="$HOME/.claude/ghostty-bg-state"
+  mkdir -p "$STATE_DIR" 2>/dev/null
+  key=$(printf '%s' "$tty_path" | tr '/' '_')
+  count_file="$STATE_DIR/$key.count"
+  lock_dir="$STATE_DIR/$key.lock"
+
+  # mkdir is atomic on POSIX filesystems -- cheap mutual exclusion for the
+  # tiny read-increment-write critical section below. Bounded retry so a
+  # stuck lock (crashed holder) can't hang a hook forever.
+  i=0
+  while ! mkdir "$lock_dir" 2>/dev/null; do
+    i=$((i + 1))
+    [ "$i" -gt 50 ] && break
+    sleep 0.01 2>/dev/null
+  done
+
+  n=$(cat "$count_file" 2>/dev/null)
+  case "$n" in ''|*[!0-9]*) n=0 ;; esac
+
+  skip=0
+  case "$state" in
+    start) n=$((n + 1)) ;;
+    end)   n=$((n - 1)); [ "$n" -lt 0 ] && n=0; [ "$n" -gt 0 ] && skip=1 ;;
+    reset) n=0 ;;
+    # working/idle/attention: direct paint, counter untouched
+  esac
+  echo "$n" > "$count_file"
+  rmdir "$lock_dir" 2>/dev/null
+
+  if [ -f "$HOME/.claude/ghostty-bg.debug" ]; then
+    printf '%s %-9s %-14s n=%-3s %s\n' "$(date +%T)" "$state" "$tty_path" "$n" "$([ "$skip" = 1 ] && echo skip)" \
+      >> "$HOME/.claude/ghostty-bg.log"
+  fi
+
+  if [ "$skip" = 0 ]; then
+    printf '\033]11;%s\007' "$color" > "$tty_path" 2>/dev/null
+  fi
+fi
 exit 0

@@ -208,7 +208,7 @@ in {
   ];
 
   systemd.services.hermes-vm-autostart = {
-    description = "Enable autostart for the personal Hermes VM";
+    description = "Keep the personal Hermes VM from autostarting at boot";
     wantedBy = ["multi-user.target"];
     after = ["libvirtd.service"];
     requires = ["libvirtd.service"];
@@ -225,17 +225,10 @@ in {
       ${shellBase}
       ${domainHasPhoneUsb}
 
-      virsh --connect "$virsh_uri" autostart "$domain"
+      virsh --connect "$virsh_uri" autostart --disable "$domain"
       if ! domain_has_phone_usb --inactive "$domain"; then
         virsh --connect "$virsh_uri" attach-device "$domain" \
           "${phoneUsb}" --config
-      fi
-      if [[ "$(virsh --connect "$virsh_uri" domstate "$domain")" != "running" ]]; then
-        virsh --connect "$virsh_uri" start "$domain"
-      fi
-      if phone_usb_node >/dev/null && ! domain_has_phone_usb "$domain"; then
-        virsh --connect "$virsh_uri" attach-device "$domain" \
-          "${phoneUsb}" --live
       fi
     '';
   };

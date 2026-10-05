@@ -49,9 +49,9 @@ in {
       # take effect on Ghostty reload and flow back to git, with no rebuild.
       ".config/ghostty/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.config/ghostty/config";
       # AI coding assistant instructions - using mkOutOfStoreSymlink so edits flow back to git
-      ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
-      ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
-      ".gitlab/duo/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agents.md";
+      ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
+      ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
+      ".gitlab/duo/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
       # Tints the Ghostty background to show Claude Code state: green while it works,
       # rose while it waits on you. Driven by hooks in ~/.claude/settings.json, which
       # is deliberately left unmanaged so Claude Code can still write to it.

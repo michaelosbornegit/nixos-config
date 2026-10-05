@@ -58,6 +58,11 @@ in {
       # Colours are tuned in the .conf; edits flow back to git.
       ".claude/ghostty-bg".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg";
       ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
+      # Global Stop/UserPromptSubmit/Subagent* hooks (see ~/.claude/settings.json)
+      # that let host_monitor.py in the scripts repo track actively-generating
+      # sessions for the Desk Buddy agent-count display.
+      ".claude/agent-monitor-start-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-start-hook";
+      ".claude/agent-monitor-stop-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-stop-hook";
     }
     // skillLinks ".claude/skills"
     // skillLinks ".codex/skills";

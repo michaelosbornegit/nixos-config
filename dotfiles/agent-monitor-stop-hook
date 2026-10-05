@@ -1,0 +1,26 @@
+#!/bin/sh
+# Registered as a global Stop + StopFailure + SubagentStop hook in
+# ~/.claude/settings.json. Fires once per finished turn or subagent run
+# (including background/workflow-spawned agents). Paired with
+# agent-monitor-start-hook (UserPromptSubmit/SubagentStart) so
+# host_monitor.py can bracket exactly when something is *actively
+# generating* vs just sitting open, the same signal ghostty-bg uses for
+# its green/rose indicator.
+#
+# Subagent hook payloads share the PARENT session's session_id but carry
+# their own unique agent_id -- prefer agent_id when present so each
+# subagent's stop clears its own bracket instead of the parent's. "kind"
+# records which one this was: host_monitor.py counts both toward the
+# on-screen "turns" tally, but only flashes the LED for a top-level
+# session stop, not every subagent completion.
+input=$(cat)
+agent_id=$(printf '%s' "$input" | grep -o '"agent_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+if [ -n "$agent_id" ]; then
+  key="$agent_id"
+  kind="subagent"
+else
+  key=$(printf '%s' "$input" | grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+  kind="session"
+fi
+mkdir -p "$HOME/.cache/claude-agent-monitor"
+printf '{"type":"stop","session_id":"%s","kind":"%s","t":%s}\n' "$key" "$kind" "$(date +%s)" >> "$HOME/.cache/claude-agent-monitor/session_events.log"

@@ -1,0 +1,18 @@
+#!/bin/sh
+# Registered as a global UserPromptSubmit + SubagentStart hook in
+# ~/.claude/settings.json. Fires when a main-session turn or a subagent
+# (including background/workflow-spawned agents, which use the identical
+# mechanism) starts generating. Paired with agent-monitor-stop-hook
+# (Stop/StopFailure/SubagentStop) so host_monitor.py can bracket exactly
+# when something is *actively generating* vs just sitting open.
+#
+# Subagent hook payloads share the PARENT session's session_id but carry
+# their own unique agent_id -- prefer agent_id when present so each
+# subagent gets its own bracket instead of colliding with the parent's.
+input=$(cat)
+key=$(printf '%s' "$input" | grep -o '"agent_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+if [ -z "$key" ]; then
+  key=$(printf '%s' "$input" | grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+fi
+mkdir -p "$HOME/.cache/claude-agent-monitor"
+printf '{"type":"start","session_id":"%s","t":%s}\n' "$key" "$(date +%s)" >> "$HOME/.cache/claude-agent-monitor/session_events.log"

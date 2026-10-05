@@ -14,6 +14,14 @@
   # Flatpak 1.18 leaks NixOS's host PATH into flatpak-spawn subsandboxes.
   # Sober's glycin image loader expects FHS paths there, including /usr/bin.
   flatpakRun = "env PATH=/usr/bin:/bin ${flatpak}";
+  # The Codex app itself stays lazy-built, so its icon is not linked into the
+  # Home Manager profile. Copy only the pinned upstream icon into a tiny output
+  # that GNOME can resolve through the normal hicolor icon theme.
+  codexDesktopIcon = pkgs.runCommandLocal "codex-desktop-icon" {} ''
+    install -Dm0644 \
+      ${inputs.codex-desktop-linux}/assets/codex-linux.png \
+      "$out/share/icons/hicolor/256x256/apps/codex-desktop.png"
+  '';
   lazyNixBuild = pkgs.writeShellApplication {
     name = "lazy-nix-build";
     runtimeInputs = with pkgs; [
@@ -563,6 +571,7 @@ in {
       # code-cursor
       # windsurf
       appimage-run
+      codexDesktopIcon
       # games/fun
       # ollama-cuda # takes forever to install, so not included in normal builds
       vlc

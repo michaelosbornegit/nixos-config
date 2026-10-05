@@ -44,7 +44,7 @@
     # gedit # text editor MYEDIT keep
     gnome-characters
     gnome-music
-    gnome-photos
+    loupe # image viewer
     # gnome-terminal MYEDIT keep
     gnome-tour
     hitori # sudoku game

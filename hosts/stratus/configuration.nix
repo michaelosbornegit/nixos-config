@@ -59,7 +59,14 @@
   users.groups.libvirtd.members = [user];
 
   virtualisation = {
-    libvirtd.enable = true;
+    libvirtd = {
+      enable = true;
+      # NixOS defaults to onBoot = "start" / onShutdown = "suspend", which
+      # saves running guests at shutdown and resumes them at boot regardless
+      # of the per-domain autostart flag.
+      onBoot = "ignore";
+      onShutdown = "shutdown";
+    };
     spiceUSBRedirection.enable = true;
     docker.enable = true;
   };

@@ -1,6 +1,5 @@
 {
   inputs,
-  outputs,
   lib,
   user,
   stateVersion,
@@ -9,15 +8,19 @@
   flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
 in {
   imports = [
-    ../../hosts/common.nix
+    ./common.nix
     inputs.home-manager.nixosModules.home-manager
   ];
 
   home-manager = {
+    # Share the system's nixpkgs (and its allowUnfree) instead of evaluating a
+    # second one, and install user packages into the per-user system profile.
+    useGlobalPkgs = true;
+    useUserPackages = true;
     backupFileExtension = "hm-bak";
-    extraSpecialArgs = {inherit inputs outputs user stateVersion;};
+    extraSpecialArgs = {inherit inputs user stateVersion;};
     users.${user}.imports = [
-      ../../hosts/home-common.nix
+      ./home-common.nix
     ];
   };
 
@@ -28,6 +31,7 @@ in {
         "flakes"
       ];
       flake-registry = "";
+      nix-path = lib.mapAttrsToList (name: _: "${name}=flake:${name}") flakeInputs;
       extra-substituters = [
         "https://nix-community.cachix.org"
       ];
@@ -37,13 +41,7 @@ in {
     };
     channel.enable = false;
     registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (name: _: "${name}=flake:${name}") flakeInputs;
   };
 
-  nixpkgs = {
-    overlays = [
-      outputs.overlays.additions
-    ];
-    config.allowUnfree = true;
-  };
+  nixpkgs.config.allowUnfree = true;
 }

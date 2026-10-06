@@ -1,17 +1,13 @@
 {
   pkgs,
-  beammp ? null,
-  codexDesktopLinux,
+  beammp,
+  # Launchers built before codex-desktop-linux was removed still pass
+  # codexDesktopLinux; accept and ignore it so they keep working until rebuilt.
+  ...
 }: let
-  system = pkgs.stdenv.hostPlatform.system;
-  beammpApps =
-    if beammp == null
-    then throw "BeamMP lazy packages require the beammp flake input"
-    else beammp.apps.${system};
-  codexDesktopPackage = codexDesktopLinux.packages.${system}.codex-desktop;
-  codexCliForApp = pkgs.writeShellScriptBin "codex-cli-for-app" ''
-    exec ${pkgs.nodejs}/bin/npx --yes @openai/codex@latest "$@"
-  '';
+  inherit (pkgs.stdenv.hostPlatform) system;
+  beammpApps = beammp.apps.${system};
+  retroarchSnes = pkgs.retroarch.withCores (cores: [cores.snes9x]);
 in {
   beammp = pkgs.writeShellScriptBin "beammp" ''
     exec ${beammpApps.beammp.program} "$@"
@@ -34,17 +30,11 @@ in {
   '';
 
   retroarch = pkgs.writeShellScriptBin "retroarch" ''
-    exec ${pkgs.retroarch.withCores (cores:
-      with cores; [
-        snes9x
-      ])}/bin/retroarch "$@"
+    exec ${retroarchSnes}/bin/retroarch "$@"
   '';
 
   snes = pkgs.writeShellScriptBin "snes" ''
-    exec ${pkgs.retroarch.withCores (cores:
-      with cores; [
-        snes9x
-      ])}/bin/retroarch "$@"
+    exec ${retroarchSnes}/bin/retroarch "$@"
   '';
 
   parsec = pkgs.writeShellScriptBin "parsec" ''
@@ -55,11 +45,9 @@ in {
     exec ${pkgs.dolphin-emu}/bin/dolphin-emu "$@"
   '';
 
-  bottles = pkgs.bottles;
-
   blender = pkgs.blender.override {cudaSupport = true;};
 
-  obs = (pkgs.wrapOBS.override {obs-studio = pkgs.obs-studio;}) {
+  obs = pkgs.wrapOBS {
     plugins = with pkgs.obs-studio-plugins; [
       wlrobs
       obs-pipewire-audio-capture
@@ -72,29 +60,21 @@ in {
     exec env QT_QPA_PLATFORM=xcb QT_QPA_PLATFORMTHEME=gnome ${pkgs.kdePackages.kdenlive}/bin/kdenlive "$@"
   '';
 
-  plex-desktop = pkgs.plex-desktop;
-
-  discord = pkgs.discord;
-
-  vesktop = pkgs.vesktop;
-
-  google-chrome = pkgs.google-chrome;
-
-  scrcpy = pkgs.scrcpy;
-
-  prismlauncher = pkgs.prismlauncher;
-
   minecraft = pkgs.writeShellScriptBin "minecraft" ''
     export PATH="${pkgs.lib.makeBinPath [pkgs.ffmpeg]}:$PATH"
     exec ${pkgs.prismlauncher}/bin/prismlauncher "$@"
   '';
 
-  runelite = pkgs.runelite;
-
-  codex-app = pkgs.writeShellScriptBin "codex-app" ''
-    export CODEX_CLI_PATH="${codexCliForApp}/bin/codex-cli-for-app"
-    exec ${codexDesktopPackage}/bin/codex-desktop "$@"
-  '';
-
-  xclicker = pkgs.xclicker;
+  inherit
+    (pkgs)
+    bottles
+    discord
+    google-chrome
+    plex-desktop
+    prismlauncher
+    runelite
+    scrcpy
+    vesktop
+    xclicker
+    ;
 }

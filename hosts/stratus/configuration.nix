@@ -8,8 +8,8 @@
   imports = [
     ./hardware-configuration.nix
     ./hermes-vm.nix
-    ../../modules/nixos/default.nix
-    ../gnome.nix
+    ../nixos-common.nix
+    ../desktop.nix
     inputs.slippi.nixosModules.default
   ];
 
@@ -24,7 +24,11 @@
       enable = true;
       plugins = with pkgs; [networkmanager-openvpn];
     };
-    firewall.enable = false;
+    firewall = {
+      enable = true;
+      # libvirt NAT bridge: guests (hermes VM) get DHCP and DNS from the host.
+      trustedInterfaces = ["virbr0"];
+    };
   };
 
   # Compressed in-RAM swap helps desktop responsiveness under memory pressure.
@@ -97,7 +101,6 @@
     xserver.videoDrivers = ["nvidia"];
     gnome.gnome-remote-desktop.enable = false;
     flatpak.enable = true;
-    openssh.enable = true;
   };
 
   systemd.targets = {

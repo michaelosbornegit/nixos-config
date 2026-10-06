@@ -5,8 +5,8 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/nixos/default.nix
-    ../gnome.nix
+    ../nixos-common.nix
+    ../desktop.nix
   ];
 
   home-manager.users.${user}.imports = [

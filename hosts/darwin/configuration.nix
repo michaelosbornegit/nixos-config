@@ -1,6 +1,5 @@
 {
   inputs,
-  outputs,
   user,
   stateVersion,
   homeStateVersion,
@@ -10,37 +9,32 @@
     ../common.nix
     inputs.home-manager.darwinModules.home-manager
     {
-      home-manager.backupFileExtension = "hm-bak";
-      home-manager.extraSpecialArgs = {
-        inherit inputs outputs user;
-        stateVersion = homeStateVersion;
-      };
-      home-manager.users.${user} = {
-        imports = [
-          ../home-common.nix
-          ./home.nix
-          ./vercel-ai-gateway.nix
-          ./vercel-ai-gateway-toggle.nix
-          ./agent-monitor.nix
-        ];
+      home-manager = {
+        # Share the system's nixpkgs (and its allowUnfree) instead of evaluating a
+        # second one, and install user packages into the per-user system profile.
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        backupFileExtension = "hm-bak";
+        extraSpecialArgs = {
+          inherit inputs user;
+          stateVersion = homeStateVersion;
+        };
+        users.${user} = {
+          imports = [
+            ../home-common.nix
+            ./home.nix
+            ./vercel-ai-gateway.nix
+            ./vercel-ai-gateway-toggle.nix
+            ./agent-monitor.nix
+          ];
+        };
       };
     }
   ];
 
   users.users."${user}".home = "/Users/${user}";
 
-  nixpkgs = {
-    # You can add overlays here
-    overlays = [
-      # Add overlays your own flake exports (from overlays and pkgs dir):
-      outputs.overlays.additions
-    ];
-    # Configure your nixpkgs instance
-    config = {
-      # Disable if you don't want unfree packages
-      allowUnfree = true;
-    };
-  };
+  nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget

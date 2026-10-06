@@ -37,35 +37,34 @@
       })
       publicSkills);
 in {
-  nixpkgs.config.allowUnfree = true;
-
   home = {
     username = "${user}";
     sessionPath = ["$HOME/.local/bin"];
 
-    file = {
-      ".p10k-config".source = ../dotfiles/.p10k-config;
-      # mkOutOfStoreSymlink rather than a store copy so theme and keybind tweaks
-      # take effect on Ghostty reload and flow back to git, with no rebuild.
-      ".config/ghostty/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.config/ghostty/config";
-      # AI coding assistant instructions - using mkOutOfStoreSymlink so edits flow back to git
-      ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
-      ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
-      ".gitlab/duo/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
-      # Tints the Ghostty background to show Claude Code state: green while it works,
-      # rose while it waits on you. Driven by hooks in ~/.claude/settings.json, which
-      # is deliberately left unmanaged so Claude Code can still write to it.
-      # Colours are tuned in the .conf; edits flow back to git.
-      ".claude/ghostty-bg".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg";
-      ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
-      # Global Stop/UserPromptSubmit/Subagent* hooks (see ~/.claude/settings.json)
-      # that let host_monitor.py in the scripts repo track actively-generating
-      # sessions for the Desk Buddy agent-count display.
-      ".claude/agent-monitor-start-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-start-hook";
-      ".claude/agent-monitor-stop-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-stop-hook";
-    }
-    // skillLinks ".claude/skills"
-    // skillLinks ".codex/skills";
+    file =
+      {
+        ".p10k-config".source = ../dotfiles/.p10k-config;
+        # mkOutOfStoreSymlink rather than a store copy so theme and keybind tweaks
+        # take effect on Ghostty reload and flow back to git, with no rebuild.
+        ".config/ghostty/config".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/.config/ghostty/config";
+        # AI coding assistant instructions - using mkOutOfStoreSymlink so edits flow back to git
+        ".claude/CLAUDE.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
+        ".codex/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
+        ".gitlab/duo/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/AGENTS.md";
+        # Tints the Ghostty background to show Claude Code state: green while it works,
+        # rose while it waits on you. Driven by hooks in ~/.claude/settings.json, which
+        # is deliberately left unmanaged so Claude Code can still write to it.
+        # Colours are tuned in the .conf; edits flow back to git.
+        ".claude/ghostty-bg".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg";
+        ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
+        # Global Stop/UserPromptSubmit/Subagent* hooks (see ~/.claude/settings.json)
+        # that let host_monitor.py in the scripts repo track actively-generating
+        # sessions for the Desk Buddy agent-count display.
+        ".claude/agent-monitor-start-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-start-hook";
+        ".claude/agent-monitor-stop-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-stop-hook";
+      }
+      // skillLinks ".claude/skills"
+      // skillLinks ".codex/skills";
 
     packages = with pkgs; [
       zsh-powerlevel10k # zsh theme
@@ -114,141 +113,145 @@ in {
         '';
       })
     ];
+
+    sessionVariables = {
+      # Suppress zoxide's doctor warning — it complains about not being last in .zshrc,
+      # but home-manager controls the order and nothing after it overrides the cd function.
+      _ZO_DOCTOR = "0";
+      npm_config_yes = "true";
+    };
+
+    # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+    inherit stateVersion;
   };
 
   # PROGRAMS
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    autosuggestion.enable = true;
-    syntaxHighlighting.enable = true;
+  programs = {
+    zsh = {
+      enable = true;
+      enableCompletion = true;
+      autosuggestion.enable = true;
+      syntaxHighlighting.enable = true;
 
-    shellAliases = {
-      osupdate = "(cd ~/development/repos/nixos-config && git pull && nix flake update)";
-      osupgrade =
-        if pkgs.stdenv.hostPlatform.isDarwin
-        then "(cd ~/development/repos/nixos-config && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
-        else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
-      osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
-      osoptimize = "sudo nix-store --optimize";
-    };
+      shellAliases = {
+        osupdate = "(cd ~/development/repos/nixos-config && git pull && nix flake update)";
+        osupgrade =
+          if pkgs.stdenv.hostPlatform.isDarwin
+          then "(cd ~/development/repos/nixos-config && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
+          else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
+        osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
+        osoptimize = "sudo nix-store --optimize";
+      };
 
-    initContent = lib.mkMerge [
-      (lib.mkOrder 500 ''
-        # Child shells can inherit Home Manager's "already sourced" guard vars
-        # without inheriting the updated PATH, so restore user-local binaries here.
-        path=("$HOME/.local/bin" $path)
-      '')
-      (lib.mkOrder 550 ''
-        # Use official fzf history widget for Up-arrow to preserve multiline entries.
-        if [[ -n ''${terminfo[kcuu1]} ]]; then
-          bindkey ''${terminfo[kcuu1]} fzf-history-widget
-        fi
-        bindkey '^[[A' fzf-history-widget
-        bindkey '^[OA' fzf-history-widget
-      '')
-      (lib.mkOrder 600 ''
-        # codex ships no standalone binary; expose it as a function rather than
-        # an alias so other shell functions (codex-vercel in
-        # vercel-ai-gateway.nix) can call it normally.
-        codex() {
-          npx @openai/codex@latest --dangerously-bypass-approvals-and-sandbox "$@"
-        }
-      '')
-      ''
-        # Prevent zsh-hist from rewriting multiline history into literal \n.
-        zstyle ':hist:*' auto-format no
-        source ~/.p10k-config
-        source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.zsh
-        source ${pkgs.zsh-forgit}/share/zsh/zsh-forgit/forgit.plugin.zsh
-      ''
-    ];
-
-    plugins = [
-      {
-        name = "powerlevel10k";
-        src = pkgs.zsh-powerlevel10k;
-        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }
-    ];
-  };
-
-  programs.fzf.enable = true;
-
-  programs.zoxide = {
-    enable = true;
-    options = ["--cmd cd"];
-  };
-
-  # Suppress zoxide's doctor warning — it complains about not being last in .zshrc,
-  # but home-manager controls the order and nothing after it overrides the cd function.
-  home.sessionVariables._ZO_DOCTOR = "0";
-  home.sessionVariables.npm_config_yes = "true";
-
-  programs.eza = {
-    enable = true;
-    colors = "always";
-    icons = "auto";
-  };
-
-  programs.vscode = {
-    enable = true;
-    profiles.default = {
-      extensions = with pkgs.vscode-extensions; [
-        ms-azuretools.vscode-docker
-        ms-vscode-remote.remote-ssh
-        ms-vscode-remote.remote-containers
-        bbenoist.nix
-        ms-python.python
-        mechatroner.rainbow-csv
-        github.vscode-pull-request-github
-        github.copilot
+      initContent = lib.mkMerge [
+        (lib.mkOrder 500 ''
+          # Child shells can inherit Home Manager's "already sourced" guard vars
+          # without inheriting the updated PATH, so restore user-local binaries here.
+          path=("$HOME/.local/bin" $path)
+        '')
+        (lib.mkOrder 550 ''
+          # Use official fzf history widget for Up-arrow to preserve multiline entries.
+          if [[ -n ''${terminfo[kcuu1]} ]]; then
+            bindkey ''${terminfo[kcuu1]} fzf-history-widget
+          fi
+          bindkey '^[[A' fzf-history-widget
+          bindkey '^[OA' fzf-history-widget
+        '')
+        (lib.mkOrder 600 ''
+          # codex ships no standalone binary; expose it as a function rather than
+          # an alias so other shell functions (codex-vercel in
+          # vercel-ai-gateway.nix) can call it normally.
+          codex() {
+            npx @openai/codex@latest --dangerously-bypass-approvals-and-sandbox "$@"
+          }
+        '')
+        ''
+          # Prevent zsh-hist from rewriting multiline history into literal \n.
+          zstyle ':hist:*' auto-format no
+          source ~/.p10k-config
+          source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.zsh
+          source ${pkgs.zsh-forgit}/share/zsh/zsh-forgit/forgit.plugin.zsh
+        ''
       ];
-      userSettings = {
-        "update.mode" = "none";
-        "workbench.colorTheme" = "Light Modern";
-        "terminal.integrated.defaultProfile.linux" = "zsh";
-        "terminal.integrated.fontFamily" = "MesloLGS NF";
-        # Allow sudo to work in integrated terminal
-        "terminal.integrated.allowChmod" = false;
-        # trust all files
-        "security.workspace.trust.untrustedFiles" = "open";
-        # commit all changes when there are no staged changes
-        "git.enableSmartCommit" = true;
-        # periodically fetch
-        "git.autofetch" = true;
-        # no confirm dialog when clicking sync
-        "git.confirmSync" = false;
-        # format on save if possible
-        "editor.formatOnSave" = true;
-        # copilot settings
-        "chat.agent.maxRequests" = 100;
-        # auto approve chat responses (yolo mode)
-        "chat.tools.global.autoApprove" = true;
-        # don't prompt when opening files via file:// protocol
-        "security.promptForLocalFileProtocolHandling" = false;
+
+      plugins = [
+        {
+          name = "powerlevel10k";
+          src = pkgs.zsh-powerlevel10k;
+          file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+        }
+      ];
+    };
+
+    fzf.enable = true;
+
+    zoxide = {
+      enable = true;
+      options = ["--cmd cd"];
+    };
+
+    eza = {
+      enable = true;
+      colors = "always";
+      icons = "auto";
+    };
+
+    vscode = {
+      enable = true;
+      profiles.default = {
+        extensions = with pkgs.vscode-extensions; [
+          ms-azuretools.vscode-docker
+          ms-vscode-remote.remote-ssh
+          ms-vscode-remote.remote-containers
+          bbenoist.nix
+          ms-python.python
+          mechatroner.rainbow-csv
+          github.vscode-pull-request-github
+          github.copilot
+        ];
+        userSettings = {
+          "update.mode" = "none";
+          "workbench.colorTheme" = "Light Modern";
+          "terminal.integrated.defaultProfile.linux" = "zsh";
+          "terminal.integrated.fontFamily" = "MesloLGS NF";
+          # Allow sudo to work in integrated terminal
+          "terminal.integrated.allowChmod" = false;
+          # trust all files
+          "security.workspace.trust.untrustedFiles" = "open";
+          # commit all changes when there are no staged changes
+          "git.enableSmartCommit" = true;
+          # periodically fetch
+          "git.autofetch" = true;
+          # no confirm dialog when clicking sync
+          "git.confirmSync" = false;
+          # format on save if possible
+          "editor.formatOnSave" = true;
+          # copilot settings
+          "chat.agent.maxRequests" = 100;
+          # auto approve chat responses (yolo mode)
+          "chat.tools.global.autoApprove" = true;
+          # don't prompt when opening files via file:// protocol
+          "security.promptForLocalFileProtocolHandling" = false;
+        };
       };
     };
-  };
 
-  programs.git = {
-    enable = true;
-    settings = {
-      user.name = "Michael Osborne";
-      credential = {
-        "https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
-        "https://gist.github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+    git = {
+      enable = true;
+      settings = {
+        user.name = "Michael Osborne";
+        credential = {
+          "https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+          "https://gist.github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+        };
       };
     };
-  };
 
-  programs.direnv = {
-    enable = true;
-    enableBashIntegration = true;
-    enableZshIntegration = true;
-    nix-direnv.enable = true;
+    direnv = {
+      enable = true;
+      enableBashIntegration = true;
+      enableZshIntegration = true;
+      nix-direnv.enable = true;
+    };
   };
-
-  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  home.stateVersion = stateVersion;
 }

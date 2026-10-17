@@ -59,7 +59,22 @@
       localNetworkGameTransfers.openFirewall = true;
     };
     nix-ld.enable = true;
-    claude-desktop.enable = true;
+    claude-desktop = {
+      enable = true;
+      # The package wrapper exports a Nix LD_LIBRARY_PATH that xdg-open passes on
+      # to the browser; Firefox then loads Claude's older libnss3 and dies, so
+      # link clicks (OAuth, connectors) silently do nothing.
+      package = inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.override {
+        xdg-utils = pkgs.symlinkJoin {
+          name = "xdg-utils-clean-env";
+          paths = [pkgs.xdg-utils];
+          nativeBuildInputs = [pkgs.makeWrapper];
+          postBuild = ''
+            wrapProgram $out/bin/xdg-open --unset LD_LIBRARY_PATH
+          '';
+        };
+      };
+    };
   };
 
   users.groups.libvirtd.members = [user];

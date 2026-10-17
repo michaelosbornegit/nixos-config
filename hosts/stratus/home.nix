@@ -25,6 +25,7 @@ in {
       # packages
       gh
       esptool # for interacting with esp32 boards
+      sox # audio recording for Claude Code's /voice mode
       # apps
       # prusa-slicer
       # mongodb-compass

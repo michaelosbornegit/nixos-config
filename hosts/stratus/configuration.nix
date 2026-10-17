@@ -11,6 +11,7 @@
     ../nixos-common.nix
     ../desktop.nix
     inputs.slippi.nixosModules.default
+    inputs.claude-desktop.nixosModules.default
   ];
 
   home-manager.users.${user}.imports = [
@@ -58,6 +59,7 @@
       localNetworkGameTransfers.openFirewall = true;
     };
     nix-ld.enable = true;
+    claude-desktop.enable = true;
   };
 
   users.groups.libvirtd.members = [user];

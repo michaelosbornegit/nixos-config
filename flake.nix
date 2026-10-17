@@ -15,6 +15,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Official Claude Desktop Linux beta, packaged for Nix. Pinned to the audited
+    # commit: the flake auto-bumps hourly with no review, so update deliberately.
+    claude-desktop = {
+      url = "github:poeck/claude-desktop-nix-flake/55ba585546fe222bf18f391a98c1ee60f79684d2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Track Home Manager master with nixos-unstable; release branches are only
     # for stable Nixpkgs channels.
     home-manager = {

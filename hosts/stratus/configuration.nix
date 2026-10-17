@@ -7,7 +7,6 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    ./hermes-vm.nix
     ../nixos-common.nix
     ../desktop.nix
     inputs.slippi.nixosModules.default
@@ -27,7 +26,7 @@
     };
     firewall = {
       enable = true;
-      # libvirt NAT bridge: guests (hermes VM) get DHCP and DNS from the host.
+      # libvirt NAT bridge: guests get DHCP and DNS from the host.
       trustedInterfaces = ["virbr0"];
     };
   };

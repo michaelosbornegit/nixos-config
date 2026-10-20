@@ -1,6 +1,7 @@
 #!/bin/sh
 # Registered as a global Stop + StopFailure + SubagentStop hook in
-# ~/.claude/settings.json. Fires once per finished turn or subagent run
+# ~/.claude/settings.json, plus Stop + Interrupt + SubagentStop in
+# ~/.codex/hooks.json. Fires once per finished turn or subagent run
 # (including background/workflow-spawned agents). Paired with
 # agent-monitor-start-hook (UserPromptSubmit/SubagentStart) so
 # host_monitor.py can bracket exactly when something is *actively

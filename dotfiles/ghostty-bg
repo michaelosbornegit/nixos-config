@@ -1,5 +1,5 @@
 #!/bin/sh
-# Tint the Ghostty background to signal what Claude Code is doing.
+# Tint the Ghostty background to signal what Claude Code and Codex are doing.
 #
 #   ghostty-bg start      green  -- a turn or subagent began (counted)
 #   ghostty-bg end        rose*  -- a turn or subagent finished (counted)
@@ -19,7 +19,7 @@
 # would corrupt a counted model if it also incremented. reset always
 # clears the counter and bypasses it like the others.
 #
-# Wired to hooks in ~/.claude/settings.json:
+# Wired to hooks in ~/.claude/settings.json and ~/.codex/hooks.json:
 #   UserPromptSubmit, SubagentStart -> start
 #   Stop, StopFailure, SubagentStop -> end
 #   PostToolUse, PostToolUseFailure -> working

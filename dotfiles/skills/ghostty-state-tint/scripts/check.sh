@@ -14,6 +14,8 @@ SCRIPT="$CLAUDE_DIR/ghostty-bg"
 CONF="$CLAUDE_DIR/ghostty-bg.conf"
 SETTINGS="$CLAUDE_DIR/settings.json"
 HOOKS_JSON="$(cd "$(dirname "${BASH_SOURCE[0]}")/../references" && pwd)/hooks.json"
+CODEX_HOOKS_JSON="$(cd "$(dirname "${BASH_SOURCE[0]}")/../references" && pwd)/codex-hooks.json"
+CODEX_HOOKS="${CODEX_HOME:-$HOME/.codex}/hooks.json"
 
 fails=0
 pass() { printf '  PASS  %s\n' "$1"; }
@@ -56,6 +58,30 @@ else
   stale=$(jq -r '[.hooks[]?[]?.hooks[]?.command // "" | select(test("ghostty-bg")) | select(test("\\$HOME") | not)] | length' "$SETTINGS")
   [ "$stale" -gt 0 ] && fail "$stale hook command(s) use an absolute path instead of \$HOME -- not portable across machines" \
                      || pass "all hook commands are \$HOME-relative"
+fi
+
+echo "== hooks in ~/.codex/hooks.json =="
+if [ -L "$CODEX_HOOKS" ] && [ ! -e "$CODEX_HOOKS" ]; then
+  fail "DANGLING symlink -> $(readlink "$CODEX_HOOKS") (is the nix-config repo cloned at the expected path?)"
+elif [ ! -e "$CODEX_HOOKS" ]; then
+  fail "no hooks.json at $CODEX_HOOKS (rebuild home-manager, or create it by hand as a stopgap)"
+elif [ ! -L "$CODEX_HOOKS" ]; then
+  fail "$CODEX_HOOKS is not a symlink -- home-manager should manage it from nixos-config"
+elif ! jq -e . "$CODEX_HOOKS" > /dev/null 2>&1; then
+  fail "$CODEX_HOOKS is not valid JSON"
+else
+  pass "symlink resolves -> $(readlink "$CODEX_HOOKS")"
+  for ev in $(jq -r '.hooks | keys_unsorted[]' "$CODEX_HOOKS_JSON"); do
+    if jq -e --arg e "$ev" '[.hooks[$e][]?.hooks[]?.command // ""] | any(test("ghostty-bg"))' "$CODEX_HOOKS" > /dev/null 2>&1; then
+      pass "$ev wired"
+    else
+      fail "$ev NOT wired"
+    fi
+  done
+  stale=$(jq -r '[.hooks[]?[]?.hooks[]?.command // "" | select(test("ghostty-bg|agent-monitor")) | select(test("\\$HOME") | not)] | length' "$CODEX_HOOKS")
+  [ "$stale" -gt 0 ] && fail "$stale Codex hook command(s) use an absolute path instead of \$HOME -- not portable across machines" \
+                     || pass "all Codex hook commands are \$HOME-relative"
+  note "Codex hook trust is runtime state; if events do not fire, review and trust them in Codex /hooks"
 fi
 
 echo "== functional =="

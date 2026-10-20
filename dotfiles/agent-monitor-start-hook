@@ -1,9 +1,10 @@
 #!/bin/sh
 # Registered as a global UserPromptSubmit + SubagentStart hook in
-# ~/.claude/settings.json. Fires when a main-session turn or a subagent
+# ~/.claude/settings.json and ~/.codex/hooks.json. Fires when a main-session turn or a subagent
 # (including background/workflow-spawned agents, which use the identical
 # mechanism) starts generating. Paired with agent-monitor-stop-hook
-# (Stop/StopFailure/SubagentStop) so host_monitor.py can bracket exactly
+# (Stop/StopFailure/SubagentStop, or Codex Stop/Interrupt/SubagentStop) so
+# host_monitor.py can bracket exactly
 # when something is *actively generating* vs just sitting open.
 #
 # Subagent hook payloads share the PARENT session's session_id but carry

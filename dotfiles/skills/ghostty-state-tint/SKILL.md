@@ -1,28 +1,32 @@
 ---
 name: ghostty-state-tint
-description: Install, verify, and repair the Ghostty background state tint for Claude Code — the terminal background goes faintly green while Claude is working and faintly rose while it waits on you, driven by settings.json hooks that call ~/.claude/ghostty-bg. Use this skill whenever the tint isn't working, stopped working, is stuck on one colour, fires on the wrong events, or needs setting up on a new or freshly rebuilt machine; also whenever the user wants the colours changed, fainter, stronger, or the tint switched off. Trigger on things like "the background isn't going green any more", "my terminal is stuck pink", "set the terminal tint up on this box", "why is my ghostty background changing colour", "the claude hooks aren't firing", or any mention of the terminal background reflecting Claude's state — even when the user names neither this skill nor the script.
+description: Install, verify, and repair the Ghostty background state tint for Claude Code and Codex — the terminal background goes faintly green while the agent is working and faintly rose while it waits on you, driven by Claude settings.json and Codex hooks.json hooks that call ~/.claude/ghostty-bg. Use this skill whenever the tint isn't working, stopped working, is stuck on one colour, fires on the wrong events, or needs setting up on a new or freshly rebuilt machine; also whenever the user wants the colours changed, fainter, stronger, or the tint switched off. Trigger on things like "the background isn't going green any more", "my terminal is stuck pink", "set the terminal tint up on this box", "why is my ghostty background changing colour", "the claude or codex hooks aren't firing", or any mention of the terminal background reflecting agent state — even when the user names neither tool nor script.
 ---
 
 # Ghostty state tint
 
-The terminal background signals whether Claude is busy or waiting: faint green while
+The terminal background signals whether Claude or Codex is busy or waiting: faint green while
 working (including subagents and workflows), faint rose the moment it wants input.
-It works by writing an OSC 11 escape sequence to the tty from Claude Code hooks.
+It works by writing an OSC 11 escape sequence to the tty from Claude Code and Codex hooks.
 
-## The four moving parts
+## The moving parts
 
 Knowing which part is broken is most of the work, because they fail in different ways.
 
 | Part | Where | Notes |
 |---|---|---|
-| the script | `~/development/repos/nixos-config/dotfiles/ghostty-bg` | POSIX sh, writes OSC 11. Takes `working`, `idle`, `attention`, or `reset` |
+| the script | `~/development/repos/nixos-config/dotfiles/ghostty-bg` | POSIX sh, writes OSC 11. Takes `start`/`end` (counted), `working`, `idle`, `attention`, or `reset` |
 | the colours | `…/dotfiles/ghostty-bg.conf` | sourced by the script; the script also carries identical built-in defaults as a fallback |
-| the symlinks | `hosts/home-common.nix` | `home.file` + `mkOutOfStoreSymlink` puts both at `~/.claude/`, so edits flow back to git |
-| the hooks | `~/.claude/settings.json` | **not** nix-managed |
+| the symlinks | `hosts/home-common.nix` | `home.file` + `mkOutOfStoreSymlink` puts both at `~/.claude/`, and the Codex hooks at `~/.codex/hooks.json`, so edits flow back to git |
+| Claude hooks | `~/.claude/settings.json` | **not** nix-managed |
+| Codex hooks | `~/.codex/hooks.json` | nix-managed symlink; trust it in Codex with `/hooks` |
 
-`settings.json` is deliberately left out of nix. Claude Code writes to it itself, and if it
+`~/.claude/settings.json` is deliberately left out of nix. Claude Code writes to it itself, and if it
 ever writes via temp-file-plus-rename, that would replace a symlink with a regular file and
 silently strand the repo copy. Merging the hooks in (see below) avoids betting on that.
+
+`~/.codex/hooks.json` is read-only for Codex, so home-manager can safely symlink it from this
+repo. New or changed non-managed Codex hooks are skipped until reviewed and trusted in `/hooks`.
 
 Because `~/.claude/ghostty-bg` is a **symlink into the repo**, editing it edits the repo
 file. Never assume there is a separate local copy to change.
@@ -56,9 +60,10 @@ to `settings.json.tint-bak` and refuses to touch malformed JSON. Prefer it over 
 jq; getting the non-destructive merge right is exactly what it exists for.
 
 **Hooks wired but nothing fires.** Claude Code's settings watcher may not have reloaded.
-You cannot fix this from inside the session — tell the user to open `/hooks` once, or
-restart. Confirm by `touch ~/.claude/ghostty-bg.debug`, doing anything that runs a tool,
-then reading `~/.claude/ghostty-bg.log`. Remove the flag afterwards so the log stops growing.
+Tell the user to open `/hooks` once or restart. In Codex, `/hooks` is also where non-managed
+hooks must be reviewed and trusted; untrusted hooks are skipped by design. Confirm by
+`touch ~/.claude/ghostty-bg.debug`, doing anything that runs a tool, then reading
+`~/.claude/ghostty-bg.log`. Remove the flag afterwards so the log stops growing.
 
 **Files missing or the symlink dangles.** Either the repo isn't cloned at
 `~/development/repos/nixos-config` (`dotfilesPath` hardcodes that path, so every symlink
@@ -87,25 +92,33 @@ can still clear a tint that is already on screen.
 
 ## The event map
 
-`references/hooks.json` is the canonical desired state. The reasoning behind it:
+`references/hooks.json` is Claude's canonical desired state;
+`references/codex-hooks.json` is Codex's. The colour intent is the same, but the available
+events differ:
 
-| Event | State | Why |
-|---|---|---|
-| `UserPromptSubmit` | working | turn begins |
-| `PostToolUse`, `PostToolUseFailure` | working | also re-asserts green after a permission pause, which nothing else covers. `async` so it adds no latency |
-| `Notification` | attention | permission prompt or question waiting |
-| `Stop`, `StopFailure` | idle | turn over, including errored turns |
-| `SessionStart` | idle | fresh session, `/clear`, resume |
-| `SessionEnd` | reset | back to the theme background |
+| Intent | Claude Code | Codex | State |
+|---|---|---|---|
+| turn begins | `UserPromptSubmit` | `UserPromptSubmit` | working (`start`) |
+| subagent begins / ends | `SubagentStart` / `SubagentStop` | `SubagentStart` / `SubagentStop` | `start` / `end` |
+| tool ran; re-assert green after a pause | `PostToolUse`, `PostToolUseFailure` | `PostToolUse` | working, `async` |
+| permission/question waiting | `Notification` | `PermissionRequest` | attention |
+| turn over, including errored/interrupted | `Stop`, `StopFailure` | `Stop`, `Interrupt` | idle (`end`) |
+| fresh/resumed session | `SessionStart` | `SessionStart` | idle |
+| clean session exit | `SessionEnd` | `SessionEnd` | reset |
 
-`SubagentStop` is deliberately absent: a finished subagent does not mean the main agent is
-done, so wiring it would flash "your turn" mid-work. Nothing is wired to
-`PermissionRequest` either — `Notification` already covers that case, and keeping hooks out
-of the permission path avoids any risk of interfering with a permission decision.
+`start` and `end` are reference-counted per tty, so the main turn and every subagent each
+open and close one bracket. Several active subagents keep the green tint until the last
+bracket closes, rather than flashing rose when one finishes. In both tools the same events
+also bracket the agent-monitor count through the shared hooks.
 
-Two known boundaries worth stating rather than debugging: interrupting with Esc may not fire
-`Stop`, so green can linger until `Notification` trips on idle; and `SessionEnd` cannot be
-verified from inside a live session.
+Codex has no Claude-style `Notification` or `StopFailure`; `PermissionRequest` and
+`Interrupt` are the closest events. The permission hook is synchronous and deliberately
+does not run the monitor hook, so it cannot delay or interfere with the permission decision.
+
+Two known boundaries worth stating rather than debugging: Claude interrupting with Esc may
+not fire `Stop`, so green can linger until `Notification` trips on idle; and `SessionEnd`
+cannot be verified from inside a live session. Codex hook trust must also be accepted in
+`/hooks` after the config changes before those events can fire.
 
 ## Changing the colours
 

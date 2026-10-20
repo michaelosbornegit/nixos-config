@@ -62,6 +62,10 @@ in {
         # sessions for the Desk Buddy agent-count display.
         ".claude/agent-monitor-start-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-start-hook";
         ".claude/agent-monitor-stop-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-stop-hook";
+        # Codex discovers hooks.json alongside its config layers. This file is
+        # read-only for Codex (unlike ~/.codex/config.toml), so a repo symlink is
+        # safe and lets the same monitor/tint scripts serve both CLIs.
+        ".codex/hooks.json".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills/ghostty-state-tint/references/codex-hooks.json";
       }
       // skillLinks ".claude/skills"
       // skillLinks ".codex/skills";

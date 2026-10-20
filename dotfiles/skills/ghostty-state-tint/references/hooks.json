@@ -5,7 +5,7 @@
   },
   "UserPromptSubmit": {
     "type": "command",
-    "command": "\"$HOME/.claude/ghostty-bg\" working"
+    "command": "\"$HOME/.claude/ghostty-bg\" start"
   },
   "PostToolUse": {
     "type": "command",
@@ -23,11 +23,19 @@
   },
   "Stop": {
     "type": "command",
-    "command": "\"$HOME/.claude/ghostty-bg\" idle"
+    "command": "\"$HOME/.claude/ghostty-bg\" end"
   },
   "StopFailure": {
     "type": "command",
-    "command": "\"$HOME/.claude/ghostty-bg\" idle"
+    "command": "\"$HOME/.claude/ghostty-bg\" end"
+  },
+  "SubagentStart": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" start"
+  },
+  "SubagentStop": {
+    "type": "command",
+    "command": "\"$HOME/.claude/ghostty-bg\" end"
   },
   "SessionEnd": {
     "type": "command",

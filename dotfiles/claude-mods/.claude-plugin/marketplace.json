@@ -1,0 +1,5 @@
+{
+  "name": "local-mods",
+  "owner": { "name": "mosborne" },
+  "plugins": [{ "name": "activity-indicator", "source": "./activity-indicator" }]
+}

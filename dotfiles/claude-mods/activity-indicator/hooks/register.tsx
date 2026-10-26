@@ -12,6 +12,11 @@ const title = atom({ plugin: 'activity-indicator', key: 'title' } as const, null
 // AI one.
 const TITLE_ROW = /"type":"(custom-title|ai-title)","(?:customTitle|aiTitle)":("(?:[^"\\]|\\.)*")/g
 
+// grep's -E spelling of TITLE_ROW: the title rows are pulled out of the
+// transcript by grep, so the mod never loads the whole file. A long session's
+// transcript runs to megabytes, past what $.fs.read will take (4 MiB).
+const TITLE_GREP = '"type":"(custom-title|ai-title)","(customTitle|aiTitle)":"([^"\\\\]|\\\\.)*"'
+
 const titleFrom = (text: string): string | null => {
   let custom: string | null = null
   let ai: string | null = null
@@ -155,27 +160,33 @@ export const register: Register = on => {
   let transcript: string | null = null
   let isLogged = false
 
-  // A title is set or renamed around a turn, so look again at both ends.
-  // A transcript past fs.read's 4 MiB cap rejects; keep the last title seen.
+  // A title is set or renamed around a turn, so look again at both ends. The
+  // look runs beside the turn, never in front of it, and a failed one keeps
+  // the last title seen.
   on('prompt.submit', async ($, e, next) => {
     await update($, phase, () => 'working' as Phase)
-    try {
-      if (!transcript) {
-        const base = ((await $.env.get('CLAUDE_CONFIG_DIR')) ?? `${await $.env.get('HOME')}/.claude`) + '/projects'
-        const file = `${await $.session.id()}.jsonl`
-        for (const dir of await $.fs.list(base)) {
-          if (dir.kind === 'dir' && (await $.fs.exists(`${base}/${dir.name}/${file}`))) {
-            transcript = `${base}/${dir.name}/${file}`
-            break
+    void (async () => {
+      try {
+        if (!transcript) {
+          const base = ((await $.env.get('CLAUDE_CONFIG_DIR')) ?? `${await $.env.get('HOME')}/.claude`) + '/projects'
+          const file = `${await $.session.id()}.jsonl`
+          for (const dir of await $.fs.list(base)) {
+            if (dir.kind === 'dir' && (await $.fs.exists(`${base}/${dir.name}/${file}`))) {
+              transcript = `${base}/${dir.name}/${file}`
+              break
+            }
           }
         }
+        if (!transcript) return
+        // grep exits 1 when nothing matches yet (an untitled session).
+        const { exitCode, stdout } = await $.process.run(['grep', '-a', '-o', '-E', TITLE_GREP, transcript])
+        const t = exitCode === 0 ? titleFrom(stdout) : null
+        if (t) await update($, title, () => t)
+      } catch (err) {
+        if (!isLogged) $.ui.log(`activity-indicator: no session title (${err})`, { to: 'debug' })
+        isLogged = true
       }
-      const t = transcript ? titleFrom(await $.fs.read(transcript)) : null
-      if (t) await update($, title, () => t)
-    } catch (err) {
-      if (!isLogged) $.ui.log(`activity-indicator: no session title (${err})`)
-      isLogged = true
-    }
+    })()
     return next(e)
   })
 
@@ -186,10 +197,14 @@ export const register: Register = on => {
 
   on('turn.complete', async ($, e, next) => {
     await update($, phase, () => 'idle' as Phase)
-    try {
-      const t = transcript ? titleFrom(await $.fs.read(transcript)) : null
-      if (t) await update($, title, () => t)
-    } catch {}
+    void (async () => {
+      if (!transcript) return
+      try {
+        const { exitCode, stdout } = await $.process.run(['grep', '-a', '-o', '-E', TITLE_GREP, transcript])
+        const t = exitCode === 0 ? titleFrom(stdout) : null
+        if (t) await update($, title, () => t)
+      } catch {}
+    })()
     return next(e)
   })
 

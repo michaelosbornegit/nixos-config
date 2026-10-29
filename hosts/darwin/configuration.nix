@@ -7,6 +7,7 @@
 }: {
   imports = [
     ../common.nix
+    ./defaults.nix
     inputs.home-manager.darwinModules.home-manager
     {
       home-manager = {

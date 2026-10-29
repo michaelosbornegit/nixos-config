@@ -21,7 +21,6 @@
     "codex"
     "create-doc"
     "entertainment-scout"
-    "find-skills"
     "ghostty-state-tint"
     "glab"
     "pr-review"
@@ -36,6 +35,49 @@
         value.source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills/${name}";
       })
       publicSkills);
+
+  # Subset of ~/.claude/settings.json managed from here, deep-merged on every
+  # switch. The file itself stays unmanaged so Claude Code can keep writing it;
+  # keys that change often (model, effort level) and anything work-specific
+  # (org plugin marketplaces) are deliberately left out. Plugins are only ever
+  # switched on here, never off.
+  claudeSettings = {
+    theme = "light";
+    tui = "fullscreen";
+    alwaysThinkingEnabled = true;
+    autoCompactEnabled = true;
+    voiceEnabled = true;
+    voice = {
+      enabled = true;
+      mode = "hold";
+    };
+    statusLine = {
+      type = "command";
+      command = "bash ${config.home.homeDirectory}/.claude/statusline-command.sh";
+    };
+    extraKnownMarketplaces = {
+      claude-plugins-official.source = {
+        source = "github";
+        repo = "anthropics/claude-plugins-official";
+      };
+      openai-codex.source = {
+        source = "github";
+        repo = "openai/codex-plugin-cc";
+      };
+      local-mods.source = {
+        source = "directory";
+        path = "${dotfilesPath}/claude-mods";
+      };
+    };
+    enabledPlugins = {
+      "typescript-lsp@claude-plugins-official" = true;
+      "skill-creator@claude-plugins-official" = true;
+      "vercel@claude-plugins-official" = true;
+      "figma@claude-plugins-official" = true;
+      "codex@openai-codex" = true;
+      "activity-indicator@local-mods" = true;
+    };
+  };
 in {
   home = {
     username = "${user}";
@@ -57,6 +99,8 @@ in {
         # Colours are tuned in the .conf; edits flow back to git.
         ".claude/ghostty-bg".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg";
         ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
+        # Claude Code status line (settings.json's statusLine.command points here).
+        ".claude/statusline-command.sh".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/statusline-command.sh";
         # Global Stop/UserPromptSubmit/Subagent* hooks (see ~/.claude/settings.json)
         # that let host_monitor.py in the scripts repo track actively-generating
         # sessions for the Desk Buddy agent-count display.
@@ -79,6 +123,7 @@ in {
       fd # for file finding
       bat # for file previewing
       wget # for wgetting
+      jq # used by the Claude status line script
       nodejs_24
       pnpm
       (writeShellApplication {
@@ -124,6 +169,19 @@ in {
       _ZO_DOCTOR = "0";
       npm_config_yes = "true";
     };
+
+    activation.claudeSettings = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      settings="$HOME/.claude/settings.json"
+      run mkdir -p "$HOME/.claude"
+      [ -s "$settings" ] || run sh -c "echo '{}' > '$settings'"
+      tmp="$(mktemp)"
+      if ${pkgs.jq}/bin/jq --argjson managed ${lib.escapeShellArg (builtins.toJSON claudeSettings)} '. * $managed' "$settings" > "$tmp"; then
+        run cp "$tmp" "$settings"
+      else
+        echo "claudeSettings: $settings is not valid JSON, leaving it untouched" >&2
+      fi
+      rm -f "$tmp"
+    '';
 
     # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
     inherit stateVersion;
@@ -212,11 +270,29 @@ in {
           mechatroner.rainbow-csv
           github.vscode-pull-request-github
           github.copilot
+          dbaeumer.vscode-eslint
+          eamodio.gitlens
+          johnpapa.vscode-peacock
+          mkhl.direnv
+          ms-python.vscode-pylance
+          redhat.java
+          vscjava.vscode-java-pack
+          vscjava.vscode-gradle
+          vscjava.vscode-java-debug
+          vscjava.vscode-java-dependency
+          vscjava.vscode-java-test
+          vscjava.vscode-maven
+          ms-dotnettools.csharp
+          ms-dotnettools.csdevkit
+          ms-dotnettools.vscode-dotnet-runtime
+          anthropic.claude-code
+          saoudrizwan.claude-dev
         ];
         userSettings = {
           "update.mode" = "none";
           "workbench.colorTheme" = "Light Modern";
           "terminal.integrated.defaultProfile.linux" = "zsh";
+          "terminal.integrated.defaultProfile.osx" = "zsh";
           "terminal.integrated.fontFamily" = "MesloLGS NF";
           # Allow sudo to work in integrated terminal
           "terminal.integrated.allowChmod" = false;
@@ -242,6 +318,7 @@ in {
 
     git = {
       enable = true;
+      ignores = ["**/.claude/settings.local.json"];
       settings = {
         user.name = "Michael Osborne";
         credential = {

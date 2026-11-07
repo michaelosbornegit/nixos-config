@@ -204,13 +204,15 @@ in {
 
       shellAliases = {
         osupdate = "(cd ~/development/repos/nixos-config && git pull && nix flake update)";
-        # aut tracks its latest main: it's a private repo, so it's fetched here
-        # with your own git credentials before the root rebuild (which has none).
-        # Offline, the rebuild still goes ahead on the locked revision.
+        # osupdate moves flake.lock; osupgrade builds exactly what it pins. The
+        # locked inputs are fetched first as you, never updated, because aut is
+        # a private repo and the root rebuild has no git credentials. Offline,
+        # the rebuild still goes ahead with what's already in the store. Flatpak
+        # apps (Sober, gopher64) sit outside Nix, so they're updated here too.
         osupgrade =
           if pkgs.stdenv.hostPlatform.isDarwin
-          then "(cd ~/development/repos/nixos-config && (nix flake update aut || true) && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
-          else "(cd ~/development/repos/nixos-config && (nix flake update aut || true) && sudo nixos-rebuild switch --flake .#$(hostname))";
+          then "(cd ~/development/repos/nixos-config && (nix flake archive --no-update-lock-file >/dev/null || true) && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
+          else "(cd ~/development/repos/nixos-config && (nix flake archive --no-update-lock-file >/dev/null || true) && sudo nixos-rebuild switch --flake .#$(hostname) && { ! command -v flatpak >/dev/null || flatpak update -y; })";
         osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
         osoptimize = "sudo nix-store --optimize";
       };

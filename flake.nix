@@ -23,7 +23,8 @@
     };
 
     # AI usage tracker (private). git+https so it's fetched with the user's own
-    # git credentials; osupgrade refreshes it to latest main before rebuilding.
+    # git credentials; osupdate bumps it with everything else, and osupgrade
+    # fetches the locked revision as the user before the root rebuild.
     aut = {
       url = "git+https://github.com/michaelosbornegit/aut?ref=main";
       inputs.nixpkgs.follows = "nixpkgs";

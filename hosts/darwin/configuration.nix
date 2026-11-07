@@ -26,7 +26,6 @@
             ./home.nix
             ./vercel-ai-gateway.nix
             ./vercel-ai-gateway-toggle.nix
-            ./agent-monitor.nix
           ];
         };
       };

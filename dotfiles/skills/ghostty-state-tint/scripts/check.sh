@@ -78,7 +78,7 @@ else
       fail "$ev NOT wired"
     fi
   done
-  stale=$(jq -r '[.hooks[]?[]?.hooks[]?.command // "" | select(test("ghostty-bg|agent-monitor")) | select(test("\\$HOME") | not)] | length' "$CODEX_HOOKS")
+  stale=$(jq -r '[.hooks[]?[]?.hooks[]?.command // "" | select(test("ghostty-bg")) | select(test("\\$HOME") | not)] | length' "$CODEX_HOOKS")
   [ "$stale" -gt 0 ] && fail "$stale Codex hook command(s) use an absolute path instead of \$HOME -- not portable across machines" \
                      || pass "all Codex hook commands are \$HOME-relative"
   note "Codex hook trust is runtime state; if events do not fire, review and trust them in Codex /hooks"

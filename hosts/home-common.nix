@@ -4,6 +4,7 @@
   lib,
   config,
   pkgs,
+  inputs,
   user,
   stateVersion,
   ...
@@ -79,6 +80,21 @@
     };
   };
 in {
+  imports = [inputs.aut.homeManagerModules.default];
+
+  # aut (github.com/michaelosbornegit/aut) records Claude Code and Codex
+  # sessions and turns into ~/.local/share/aut/aut.db. The module runs the
+  # collector, merges its hook into ~/.claude/settings.json, and writes
+  # ~/.codex/hooks.json (read-only for Codex) from its own hooks plus the
+  # Ghostty tint's.
+  services.aut = {
+    enable = true;
+    codex = {
+      manageHooksFile = true;
+      extraHooks = (lib.importJSON ../dotfiles/skills/ghostty-state-tint/references/codex-hooks.json).hooks;
+    };
+  };
+
   home = {
     username = "${user}";
     sessionPath = ["$HOME/.local/bin"];
@@ -101,15 +117,6 @@ in {
         ".claude/ghostty-bg.conf".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/ghostty-bg.conf";
         # Claude Code status line (settings.json's statusLine.command points here).
         ".claude/statusline-command.sh".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/statusline-command.sh";
-        # Global Stop/UserPromptSubmit/Subagent* hooks (see ~/.claude/settings.json)
-        # that let host_monitor.py in the scripts repo track actively-generating
-        # sessions for the Desk Buddy agent-count display.
-        ".claude/agent-monitor-start-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-start-hook";
-        ".claude/agent-monitor-stop-hook".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/agent-monitor-stop-hook";
-        # Codex discovers hooks.json alongside its config layers. This file is
-        # read-only for Codex (unlike ~/.codex/config.toml), so a repo symlink is
-        # safe and lets the same monitor/tint scripts serve both CLIs.
-        ".codex/hooks.json".source = config.lib.file.mkOutOfStoreSymlink "${dotfilesPath}/skills/ghostty-state-tint/references/codex-hooks.json";
       }
       // skillLinks ".claude/skills"
       // skillLinks ".codex/skills";
@@ -197,10 +204,13 @@ in {
 
       shellAliases = {
         osupdate = "(cd ~/development/repos/nixos-config && git pull && nix flake update)";
+        # aut tracks its latest main: it's a private repo, so it's fetched here
+        # with your own git credentials before the root rebuild (which has none).
+        # Offline, the rebuild still goes ahead on the locked revision.
         osupgrade =
           if pkgs.stdenv.hostPlatform.isDarwin
-          then "(cd ~/development/repos/nixos-config && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
-          else "(cd ~/development/repos/nixos-config && sudo nixos-rebuild switch --flake .#$(hostname))";
+          then "(cd ~/development/repos/nixos-config && (nix flake update aut || true) && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#darwin)"
+          else "(cd ~/development/repos/nixos-config && (nix flake update aut || true) && sudo nixos-rebuild switch --flake .#$(hostname))";
         osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
         osoptimize = "sudo nix-store --optimize";
       };

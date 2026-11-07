@@ -1,5 +1,5 @@
 {
-  "description": "Ghostty busy/waiting tint and agent-monitor event brackets for Codex.",
+  "description": "Ghostty busy/waiting tint for Codex. Merged with aut's hooks into ~/.codex/hooks.json by hosts/home-common.nix.",
   "hooks": {
     "SessionStart": [
       {
@@ -16,11 +16,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-start-hook\"",
-            "async": true
-          },
-          {
-            "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" start"
           }
         ]
@@ -29,11 +24,6 @@
     "PostToolUse": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-start-hook\"",
-            "async": true
-          },
           {
             "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" working",
@@ -57,11 +47,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-start-hook\"",
-            "async": true
-          },
-          {
-            "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" start"
           }
         ]
@@ -70,11 +55,6 @@
     "SubagentStop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-stop-hook\"",
-            "async": true
-          },
           {
             "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" end",
@@ -88,11 +68,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-stop-hook\"",
-            "async": true
-          },
-          {
-            "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" end"
           }
         ]
@@ -101,12 +76,6 @@
     "Interrupt": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-stop-hook\"",
-            "async": true,
-            "timeout": 1
-          },
           {
             "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" end",
@@ -119,11 +88,6 @@
     "SessionEnd": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/agent-monitor-stop-hook\"",
-            "async": true
-          },
           {
             "type": "command",
             "command": "\"$HOME/.claude/ghostty-bg\" reset"

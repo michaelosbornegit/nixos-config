@@ -22,6 +22,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # AI usage tracker (private). git+https so it's fetched with the user's own
+    # git credentials; osupgrade refreshes it to latest main before rebuilding.
+    aut = {
+      url = "git+https://github.com/michaelosbornegit/aut?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Track Home Manager master with nixos-unstable; release branches are only
     # for stable Nixpkgs channels.
     home-manager = {

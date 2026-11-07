@@ -38,6 +38,7 @@ in {
       ghostty
       gnomeExtensions.just-perfection
       gnomeExtensions.quick-settings-audio-panel
+      gnomeExtensions.notification-timeout
     ];
 
     file = {
@@ -120,6 +121,7 @@ in {
         # Retrying with upstream v103 after v102 triggered a GNOME Shell 50.2
         # libgvc crash. Remove this UUID first if the login crash returns.
         "quick-settings-audio-panel@rayzeq.github.io"
+        "notification-timeout@chlumskyvaclav.gmail.com"
       ];
     };
 
@@ -131,6 +133,14 @@ in {
     "org/gnome/shell/extensions/just-perfection" = {
       animation = 4;
       double-super-to-appgrid = false;
+    };
+
+    # GNOME keeps banners up while idle and never times out critical ones;
+    # hide every banner after a few seconds regardless.
+    "org/gnome/shell/extensions/notification-timeout" = {
+      timeout = 5000;
+      ignore-idle = true;
+      always-normal = true;
     };
 
     "org/gnome/desktop/interface" = {

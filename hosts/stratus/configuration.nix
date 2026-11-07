@@ -11,6 +11,7 @@
     ../desktop.nix
     inputs.slippi.nixosModules.default
     ./claude-desktop
+    ./switch2-pro-wake
   ];
 
   home-manager.users.${user}.imports = [

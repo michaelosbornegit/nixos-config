@@ -1,10 +1,36 @@
 label="$1"
 expr="$2"
+cache_name="$3"
+# The rest are the files whose contents decide the build (flake.lock, the
+# package set). While they and the expression are unchanged, reuse the last
+# build instead of paying ~3s of evaluation on every launch.
+shift 3
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/lazy-apps"
+# The out-link is a GC root, so garbage collection keeps each app's current
+# build and frees the previous one once the link moves.
+link="$cache_dir/$cache_name"
+key_file="$link.key"
+key="$({ printf '%s\n' "$expr"; cat -- "$@"; } | sha256sum | cut -d ' ' -f 1)"
+
+if [[ -e "$link" && -f "$key_file" && "$(< "$key_file")" == "$key" ]]; then
+  readlink -f "$link"
+  exit 0
+fi
+
+mkdir -p "$cache_dir"
+
+record_key() {
+  printf '%s\n' "$key" > "$key_file.tmp"
+  mv "$key_file.tmp" "$key_file"
+}
 
 if [[ "${LAZY_NIX_BUILD_FORCE_GUI:-0}" != 1 ]] && {
   [[ -t 2 ]] || { [[ -z "${DISPLAY:-}" ]] && [[ -z "${WAYLAND_DISPLAY:-}" ]]; };
 }; then
-  exec nix build --impure --no-link --print-out-paths --expr "$expr"
+  nix build --impure --out-link "$link" --print-out-paths --expr "$expr"
+  record_key
+  exit 0
 fi
 
 tmpdir="$(mktemp -d)"
@@ -169,7 +195,7 @@ END {
 ' < "$log_pipe" >> "$updates" &
 parser_pid="$!"
 
-if nix build --impure --no-link --print-out-paths --log-format internal-json --expr "$expr" \
+if nix build --impure --out-link "$link" --print-out-paths --log-format internal-json --expr "$expr" \
   > "$result_file" \
   2> "$log_pipe"; then
   status=0
@@ -192,4 +218,5 @@ if [[ "$status" != 0 ]]; then
   exit "$status"
 fi
 
+record_key
 tail -n 1 "$result_file"

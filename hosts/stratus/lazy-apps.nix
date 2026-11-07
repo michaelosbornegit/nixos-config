@@ -1,7 +1,8 @@
 # Lazy GUI apps: each is a tiny launcher that builds the real package on first
 # use (see lazy-packages.nix and lazy-nix-build.sh) instead of living in the
-# Home Manager closure, which keeps `osupgrade` fast. Anything used all the
-# time should be a normal package instead.
+# Home Manager closure, which keeps `osupgrade` fast. The build is cached under
+# ~/.cache/lazy-apps until the flake or lazy-packages.nix changes. Anything
+# used all the time should be a normal package instead.
 {
   lib,
   pkgs,
@@ -10,6 +11,14 @@
 }: let
   repoFlake = "/home/${user}/development/repos/nixos-config";
   hostLazyPackagesPath = "${repoFlake}/hosts/stratus/lazy-packages.nix";
+  # Everything the build expression reads besides itself. A change to any of
+  # these (e.g. `osupdate` bumping flake.lock) rebuilds on the next launch. Add
+  # any file that lazy-packages.nix starts importing.
+  lazyBuildInputFiles = lib.escapeShellArgs [
+    "${repoFlake}/flake.nix"
+    "${repoFlake}/flake.lock"
+    hostLazyPackagesPath
+  ];
   gamemoderun = "${pkgs.gamemode}/bin/gamemoderun";
   lazyNixBuild = pkgs.writeShellApplication {
     name = "lazy-nix-build";
@@ -296,7 +305,7 @@
 
   mkLazyCommand = command: cfg:
     pkgs.writeShellScriptBin command ''
-      result="$(${lazyNixBuild}/bin/lazy-nix-build ${lib.escapeShellArg cfg.desktopName} ${mkHostLazyPackageExpr cfg.packageAttr})" || exit $?
+      result="$(${lazyNixBuild}/bin/lazy-nix-build ${lib.escapeShellArg cfg.desktopName} ${mkHostLazyPackageExpr cfg.packageAttr} ${lib.escapeShellArg cfg.packageAttr} ${lazyBuildInputFiles})" || exit $?
       exec ${lib.optionalString (cfg.gameMode or false) "${gamemoderun} "}"$result/bin/${cfg.binary or command}" "$@"
     '';
 

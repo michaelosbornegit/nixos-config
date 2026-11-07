@@ -19,7 +19,7 @@
   # package, so only the .deb differs.
   updateExpr = pkgs.writeText "claude-desktop-update.nix" ''
     {version, sha256}:
-    import ${./package.nix} {
+    import ${./.}/package.nix {
       pkgs = import ${inputs.nixpkgs} {
         system = "${system}";
         config.allowUnfree = true;
@@ -55,6 +55,12 @@
   };
 in {
   imports = [inputs.claude-desktop.nixosModules.default];
+
+  # Claude 4.x swaps its PATH for the login shell's at startup, which puts
+  # /run/current-system/sw/bin ahead of the package wrapper's own xdg-open.
+  # Make the system xdg-open the one that drops LD_LIBRARY_PATH too, or links
+  # open with Claude's libraries and Firefox crashes (xdg-utils-clean-env.nix).
+  environment.systemPackages = [(lib.hiPrio (import ./xdg-utils-clean-env.nix {inherit pkgs;}))];
 
   programs.claude-desktop = {
     enable = true;

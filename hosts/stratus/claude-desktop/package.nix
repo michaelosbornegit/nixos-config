@@ -8,17 +8,9 @@
   sha256 ? null,
 }: let
   base = pkgs.callPackage "${claudeDesktopSrc}/pkgs/claude-desktop" {
-    # The package wrapper exports a Nix LD_LIBRARY_PATH that xdg-open passes on
-    # to the browser; Firefox then loads Claude's older libnss3 and dies, so
-    # link clicks (OAuth, connectors) silently do nothing.
-    xdg-utils = pkgs.symlinkJoin {
-      name = "xdg-utils-clean-env";
-      paths = [pkgs.xdg-utils];
-      nativeBuildInputs = [pkgs.makeWrapper];
-      postBuild = ''
-        wrapProgram $out/bin/xdg-open --unset LD_LIBRARY_PATH
-      '';
-    };
+    # Also on the system PATH (default.nix): Claude swaps its PATH for the
+    # login shell's, so this copy is not the only xdg-open it may find.
+    xdg-utils = import ./xdg-utils-clean-env.nix {inherit pkgs;};
   };
   # 3.x links libpipewire from a native module; the pinned recipe predates it.
   withPipewire = base.overrideAttrs (old: {

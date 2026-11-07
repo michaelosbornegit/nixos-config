@@ -44,5 +44,12 @@
   # configuration.nix
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
+  # The 200M ESP is shared with Windows and each kernel + initrd pair is ~55M,
+  # so only two NixOS generations fit; a third distinct kernel fails the
+  # switch with "No space left on device". The builder prunes before copying,
+  # so 2 stays safe across kernel bumps.
+  boot.loader.systemd-boot.configurationLimit = 2;
   boot.loader.efi.canTouchEfiVariables = true;
+  # Menu still shows (for picking Windows); any key stops the countdown.
+  boot.loader.timeout = 3;
 }

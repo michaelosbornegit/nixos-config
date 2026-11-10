@@ -26,6 +26,7 @@
             ./home.nix
             ./vercel-ai-gateway.nix
             ./vercel-ai-gateway-toggle.nix
+            ./tam.nix
           ];
         };
       };

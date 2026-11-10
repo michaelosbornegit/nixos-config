@@ -208,7 +208,8 @@
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
-        "slippi": "slippi"
+        "slippi": "slippi",
+        "tam": "tam"
       }
     },
     "slippi": {
@@ -248,6 +249,27 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "tam": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794287343,
+        "narHash": "sha256-0psVM/noS7pFsnPFdPnebIRG0r4X2YDsc/gHCu88FKU=",
+        "ref": "main",
+        "rev": "27437ad42755ce9a6598f5928ac01a8a2fd22ddf",
+        "revCount": 151,
+        "type": "git",
+        "url": "https://github.com/michaelosbornegit/tam"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "https://github.com/michaelosbornegit/tam"
       }
     }
   },

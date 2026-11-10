@@ -30,6 +30,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # TAM screen-time tracker (private; stratus only). Same git+https scheme as aut:
+    # fetched with the user's git credentials by osupgrade's archive step. Provides
+    # the tam-desktop daemon, the GNOME extension and the home-manager module.
+    tam = {
+      url = "git+https://github.com/michaelosbornegit/tam?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Track Home Manager master with nixos-unstable; release branches are only
     # for stable Nixpkgs channels.
     home-manager = {

@@ -21,6 +21,7 @@
 
   home-manager.users.${user}.imports = [
     ./home.nix
+    ./tam.nix
     ../gnome-home-conf.nix
   ];
 

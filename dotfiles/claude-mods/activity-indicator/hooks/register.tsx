@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { Register } from 'claude-code'
+import type { EngineInterface, Register } from 'claude-code'
 
 import type { Phase } from '../types'
 
@@ -161,40 +161,94 @@ const idle = (t: string | null) => {
   </g>`)
 }
 
-export const register: Register = on => {
-  // The transcript is <config>/projects/<dir>/<session id>.jsonl, <dir> being
-  // where the session started, which a later /cd or worktree move does not
-  // change; so find it by id once and keep the path.
-  let transcript: string | null = null
-  let isLogged = false
+// How often, and for how long, to look again for a title that isn't written
+// yet: a new session's transcript, and the title row in it, appear only after
+// its first prompt, partway into the first turn.
+const RETRY_MS = 5000
+const RETRY_TRIES = 36
 
-  // A title is set or renamed around a turn, so look again at both ends. The
-  // look runs beside the turn, never in front of it, and a failed one keeps
-  // the last title seen.
+// The transcript is <config>/projects/<dir>/<session id>.jsonl, <dir> being
+// where the session started, which a later /cd or worktree move does not
+// change. The classic events carry its path; failing those (the mod loaded
+// mid-session), it is found by id once and kept.
+let transcript: string | null = null
+let isLogged = false
+let retry: { cancel: () => void } | null = null
+// Bumped by each refresh, so a look still in flight from an older one starts
+// no timer of its own.
+let generation = 0
+
+const findTranscript = async ($: EngineInterface) => {
+  if (transcript) return
+  const base = ((await $.env.get('CLAUDE_CONFIG_DIR')) ?? `${await $.env.get('HOME')}/.claude`) + '/projects'
+  const file = `${await $.session.id()}.jsonl`
+  for (const dir of await $.fs.list(base)) {
+    if (dir.kind === 'dir' && (await $.fs.exists(`${base}/${dir.name}/${file}`))) {
+      transcript = `${base}/${dir.name}/${file}`
+      return
+    }
+  }
+}
+
+// Reads the title rows; true once a title is found. A failed look keeps the
+// last title seen.
+const lookForTitle = async ($: EngineInterface): Promise<boolean> => {
+  try {
+    await findTranscript($)
+    if (!transcript) return false
+    // grep exits 1 when nothing matches yet (an untitled session), 2 when
+    // the file isn't written yet.
+    const { exitCode, stdout } = await $.process.run(['grep', '-a', '-o', '-E', TITLE_GREP, transcript])
+    const t = exitCode === 0 ? titleFrom(stdout) : null
+    if (t) await update($, title, () => t)
+    return t !== null
+  } catch (err) {
+    if (!isLogged) $.ui.log(`activity-indicator: no session title (${err})`, { to: 'debug' })
+    isLogged = true
+    return false
+  }
+}
+
+// A title is set or renamed around a turn, so look at both ends; when the
+// look finds none (a new session), keep looking every few seconds until one
+// turns up. The look runs beside the turn, never in front of it.
+const refreshTitle = ($: EngineInterface) => {
+  retry?.cancel()
+  retry = null
+  const gen = ++generation
+  void lookForTitle($).then(isFound => {
+    if (isFound || gen !== generation) return
+    let tries = 0
+    let isBusy = false
+    const timer = $.clock.every(RETRY_MS, () => {
+      if (isBusy) return
+      isBusy = true
+      void lookForTitle($).then(isFound => {
+        isBusy = false
+        if (isFound || ++tries >= RETRY_TRIES) {
+          timer.cancel()
+          if (retry === timer) retry = null
+        }
+      })
+    })
+    retry = timer
+  })
+}
+
+export const register: Register = on => {
+  // The classic prompt event carries the transcript's path and, when the
+  // session has one, its title: a renamed or spawned session shows its name
+  // from the first prompt on.
+  on('classic.UserPromptSubmit', async ($, e, next) => {
+    if (e.transcript_path) transcript = e.transcript_path
+    const t = e.session_title
+    if (t) await update($, title, () => t)
+    return next(e)
+  })
+
   on('prompt.submit', async ($, e, next) => {
     await update($, phase, () => 'working' as Phase)
-    void (async () => {
-      try {
-        if (!transcript) {
-          const base = ((await $.env.get('CLAUDE_CONFIG_DIR')) ?? `${await $.env.get('HOME')}/.claude`) + '/projects'
-          const file = `${await $.session.id()}.jsonl`
-          for (const dir of await $.fs.list(base)) {
-            if (dir.kind === 'dir' && (await $.fs.exists(`${base}/${dir.name}/${file}`))) {
-              transcript = `${base}/${dir.name}/${file}`
-              break
-            }
-          }
-        }
-        if (!transcript) return
-        // grep exits 1 when nothing matches yet (an untitled session).
-        const { exitCode, stdout } = await $.process.run(['grep', '-a', '-o', '-E', TITLE_GREP, transcript])
-        const t = exitCode === 0 ? titleFrom(stdout) : null
-        if (t) await update($, title, () => t)
-      } catch (err) {
-        if (!isLogged) $.ui.log(`activity-indicator: no session title (${err})`, { to: 'debug' })
-        isLogged = true
-      }
-    })()
+    refreshTitle($)
     return next(e)
   })
 
@@ -207,6 +261,7 @@ export const register: Register = on => {
   })
 
   on('classic.Stop', async ($, e, next) => {
+    if (e.transcript_path) transcript = e.transcript_path
     const n = (e.background_tasks ?? []).filter(t => LIVE.has(t.status)).length
     await update($, background, () => n)
     return next(e)
@@ -215,14 +270,7 @@ export const register: Register = on => {
   on('turn.complete', async ($, e, next) => {
     if (e.agentId !== undefined) return next(e)
     await update($, phase, () => 'idle' as Phase)
-    void (async () => {
-      if (!transcript) return
-      try {
-        const { exitCode, stdout } = await $.process.run(['grep', '-a', '-o', '-E', TITLE_GREP, transcript])
-        const t = exitCode === 0 ? titleFrom(stdout) : null
-        if (t) await update($, title, () => t)
-      } catch {}
-    })()
+    refreshTitle($)
     return next(e)
   })
 

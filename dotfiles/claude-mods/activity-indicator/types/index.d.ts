@@ -2,6 +2,6 @@ export type Phase = 'idle' | 'working'
 
 declare module 'claude-code' {
   interface PluginState {
-    'activity-indicator': { phase: Phase; title: string | null; background: number }
+    'activity-indicator': { phase: Phase; title: string | null; tasks: readonly string[] }
   }
 }

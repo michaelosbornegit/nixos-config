@@ -5,14 +5,43 @@ import type { Phase } from '../types'
 
 const phase = atom({ plugin: 'activity-indicator', key: 'phase' } as const, 'idle' as Phase)
 const title = atom({ plugin: 'activity-indicator', key: 'title' } as const, null as string | null)
-// Background work still in flight (backgrounded shells, background subagents,
-// monitors, workflows) as of the main loop's last stop. The session isn't done
-// while any runs: each one's notification will wake it for another turn.
-const background = atom({ plugin: 'activity-indicator', key: 'background' } as const, 0)
+// The ids of background work still in flight: backgrounded shells, background
+// or remote subagents, workflows, monitors. The session isn't done while any
+// runs: each one's end arrives as a notification that wakes it again.
+//
+// Kept by the mod itself, from the calls that start the work and the
+// notifications that end it. The classic Stop payload lists the same work,
+// but the built-in security plugin (cc-plugin-sec-default) sends the classic
+// events past every installed plugin, so no `classic.*` hook here would run.
+const tasks = atom({ plugin: 'activity-indicator', key: 'tasks' } as const, [] as readonly string[])
 
-// The classic Stop payload lists the in-flight work; finished ones may linger
-// in it with a terminal status, so count only what is still live.
-const LIVE = new Set(['running', 'pending'])
+// The id a call's result gives the work it moved to the background, if it
+// did. A persistent monitor runs until stopped, so it doesn't count.
+const backgroundId = (tool: string, result: unknown): string | null => {
+  if (!result || typeof result !== 'object') return null
+  const r = result as Record<string, unknown>
+  const id =
+    tool === 'Bash' ? r.backgroundTaskId
+    : tool === 'Agent' ? (r.status === 'async_launched' ? r.agentId : r.status === 'remote_launched' ? r.taskId : undefined)
+    : tool === 'Workflow' ? r.taskId
+    : tool === 'Monitor' ? (r.persistent ? undefined : r.taskId)
+    : undefined
+  return typeof id === 'string' && id ? id : null
+}
+
+// A notification prompt holds one or more `<task-notification>` blocks, each
+// naming its task; a block with a final `<status>` (completed, failed,
+// stopped, ...) says that task ended. A monitor's interim events carry none.
+const LIVE_STATUS = new Set(['running', 'pending'])
+const endedIds = (text: string): string[] =>
+  text
+    .split('<task-notification>')
+    .slice(1)
+    .flatMap(block => {
+      const id = /<task-id>([^<]+)<\/task-id>/.exec(block)?.[1]
+      const status = /<status>([^<]+)<\/status>/.exec(block)?.[1]
+      return id && status && !LIVE_STATUS.has(status) ? [id] : []
+    })
 
 // The mod API has no title getter, but the session's transcript records each
 // rename as a `custom-title` row (the desktop app's sidebar name) and the
@@ -169,8 +198,7 @@ const RETRY_TRIES = 36
 
 // The transcript is <config>/projects/<dir>/<session id>.jsonl, <dir> being
 // where the session started, which a later /cd or worktree move does not
-// change. The classic events carry its path; failing those (the mod loaded
-// mid-session), it is found by id once and kept.
+// change; so it is found by id once, after it is first written, and kept.
 let transcript: string | null = null
 let isLogged = false
 let retry: { cancel: () => void } | null = null
@@ -236,20 +264,32 @@ const refreshTitle = ($: EngineInterface) => {
 }
 
 export const register: Register = on => {
-  // The classic prompt event carries the transcript's path and, when the
-  // session has one, its title: a renamed or spawned session shows its name
-  // from the first prompt on.
-  on('classic.UserPromptSubmit', async ($, e, next) => {
-    if (e.transcript_path) transcript = e.transcript_path
-    const t = e.session_title
-    if (t) await update($, title, () => t)
+  on('prompt.submit', async ($, e, next) => {
+    await update($, phase, () => 'working' as Phase)
+    if (e.origin.kind === 'task-notification') {
+      const ended = endedIds(e.text)
+      if (ended.length) await update($, tasks, ts => ts.filter(id => !ended.includes(id)))
+      // A busy session gets many of these; its title needs no fresh look.
+      if ((await read($, title)) !== null) return next(e)
+    }
+    refreshTitle($)
     return next(e)
   })
 
-  on('prompt.submit', async ($, e, next) => {
-    await update($, phase, () => 'working' as Phase)
-    refreshTitle($)
-    return next(e)
+  // Work the main loop sends to the background, by the call's own result
+  // (a Bash call moved there by ctrl+b too). A failed look passes the call on
+  // untouched.
+  on('tool.call', async ($, e, next) => {
+    const r = await next(e)
+    try {
+      const id = e.agentId === undefined && r.deny === undefined && !r.isError ? backgroundId(e.tool, r.result) : null
+      if (id) await update($, tasks, ts => (ts.includes(id) ? ts : [...ts, id]))
+      if (e.tool === 'TaskStop' && r.deny === undefined && !r.isError) {
+        const stopped = (e as { task_id?: string; shell_id?: string }).task_id ?? (e as { shell_id?: string }).shell_id
+        if (stopped) await update($, tasks, ts => ts.filter(t => t !== stopped))
+      }
+    } catch {}
+    return r
   })
 
   // Only the main loop's turns move the phase: a subagent's turn (`agentId`)
@@ -260,13 +300,6 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('classic.Stop', async ($, e, next) => {
-    if (e.transcript_path) transcript = e.transcript_path
-    const n = (e.background_tasks ?? []).filter(t => LIVE.has(t.status)).length
-    await update($, background, () => n)
-    return next(e)
-  })
-
   on('turn.complete', async ($, e, next) => {
     if (e.agentId !== undefined) return next(e)
     await update($, phase, () => 'idle' as Phase)
@@ -274,9 +307,15 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // A /clear ends the conversation that owned the work's notifications.
+  on('session.end', async ($, e, next) => {
+    if (e.reason === 'clear') await update($, tasks, () => [])
+    return next(e)
+  })
+
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const isTurn = (await read($, phase)) === 'working'
-    const bg = await read($, background)
+    const bg = (await read($, tasks)).length
     const isWorking = isTurn || bg > 0
     const label = isTurn ? 'Working' : `${bg} running in background`
     const t = await read($, title)

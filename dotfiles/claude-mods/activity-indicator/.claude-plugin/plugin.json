@@ -1,1 +1,1 @@
-{ "name": "activity-indicator", "version": "0.1.0", "description": "Tinted band above the prompt: green while Claude works, rose when it waits on you", "types": "./types/index.d.ts" }
+{ "name": "activity-indicator", "version": "0.1.0", "description": "Tinted band above the prompt: green while Claude or its background work runs, rose when it waits on you", "types": "./types/index.d.ts" }

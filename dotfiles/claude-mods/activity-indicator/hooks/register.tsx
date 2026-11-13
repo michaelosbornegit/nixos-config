@@ -5,6 +5,14 @@ import type { Phase } from '../types'
 
 const phase = atom({ plugin: 'activity-indicator', key: 'phase' } as const, 'idle' as Phase)
 const title = atom({ plugin: 'activity-indicator', key: 'title' } as const, null as string | null)
+// Background work still in flight (backgrounded shells, background subagents,
+// monitors, workflows) as of the main loop's last stop. The session isn't done
+// while any runs: each one's notification will wake it for another turn.
+const background = atom({ plugin: 'activity-indicator', key: 'background' } as const, 0)
+
+// The classic Stop payload lists the in-flight work; finished ones may linger
+// in it with a terminal status, so count only what is still live.
+const LIVE = new Set(['running', 'pending'])
 
 // The mod API has no title getter, but the session's transcript records each
 // rename as a `custom-title` row (the desktop app's sidebar name) and the
@@ -109,7 +117,7 @@ const orb = (id: string, cy: number, r: number, from: number, to: number, dur: n
 const frame = (h: number, body: string) =>
   `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='${h}' style='display:block'>${body}</svg>`
 
-const working = (t: string | null) => {
+const working = (t: string | null, label = 'Working') => {
   const h = heightFor(t)
   const cy = statusY(t)
   return frame(h, `
@@ -130,7 +138,7 @@ const working = (t: string | null) => {
     ${bar(20, cy, [10, 6, 16, 8, 10], 0.15)}
     ${bar(26, cy, [6, 16, 9, 12, 6], 0.3)}
     ${bar(32, cy, [14, 8, 15, 6, 14], 0.45)}
-    <text x='44' y='${cy + 4.5}' ${FONT} font-size='12.5' font-weight='500' letter-spacing='.4' fill='#2f7a47'>Working<tspan>.<animate attributeName='fill-opacity' values='0;1;1;0' keyTimes='0;.2;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan><tspan>.<animate attributeName='fill-opacity' values='0;0;1;1;0' keyTimes='0;.2;.4;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan><tspan>.<animate attributeName='fill-opacity' values='0;0;1;1;0' keyTimes='0;.4;.6;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan></text>
+    <text x='44' y='${cy + 4.5}' ${FONT} font-size='12.5' font-weight='500' letter-spacing='.4' fill='#2f7a47'>${xml(label)}<tspan>.<animate attributeName='fill-opacity' values='0;1;1;0' keyTimes='0;.2;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan><tspan>.<animate attributeName='fill-opacity' values='0;0;1;1;0' keyTimes='0;.2;.4;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan><tspan>.<animate attributeName='fill-opacity' values='0;0;1;1;0' keyTimes='0;.4;.6;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan></text>
   </g>`)
 }
 
@@ -190,12 +198,22 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // Only the main loop's turns move the phase: a subagent's turn (`agentId`)
+  // ending, a background one's above all, says nothing about whether Claude
+  // is still working.
   on('turn.start', async ($, e, next) => {
-    await update($, phase, () => 'working' as Phase)
+    if (e.agentId === undefined) await update($, phase, () => 'working' as Phase)
+    return next(e)
+  })
+
+  on('classic.Stop', async ($, e, next) => {
+    const n = (e.background_tasks ?? []).filter(t => LIVE.has(t.status)).length
+    await update($, background, () => n)
     return next(e)
   })
 
   on('turn.complete', async ($, e, next) => {
+    if (e.agentId !== undefined) return next(e)
     await update($, phase, () => 'idle' as Phase)
     void (async () => {
       if (!transcript) return
@@ -209,15 +227,18 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const isWorking = (await read($, phase)) === 'working'
+    const isTurn = (await read($, phase)) === 'working'
+    const bg = await read($, background)
+    const isWorking = isTurn || bg > 0
+    const label = isTurn ? 'Working' : `${bg} running in background`
     const t = await read($, title)
     const { Box, Svg } = $.ui.resolve(e)
 
     return (
       <Box>
         <Svg
-          source={isWorking ? working(t) : idle(t)}
-          alt={(t ? t + ': ' : '') + (isWorking ? 'Claude is working' : 'Ready for you')}
+          source={isWorking ? working(t, label) : idle(t)}
+          alt={(t ? t + ': ' : '') + (isTurn ? 'Claude is working' : isWorking ? label : 'Ready for you')}
           width={FRAME_W}
           height={heightFor(t)}
           isInteractive

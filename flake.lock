@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794321676,
-        "narHash": "sha256-Ue4do0IWe28D7pX5kMeXQ6Wah7kg941Wi+ZDVRbSeWU=",
+        "lastModified": 1794774761,
+        "narHash": "sha256-ReSZb3+a14vCPRRfP2t4oZMtwlJcjzPGEJvjtSzN5OY=",
         "ref": "main",
-        "rev": "c69c2de8c6fef7df29ec5baf603708f9e772b5bf",
-        "revCount": 6,
+        "rev": "23ba869081f0d5e50ed88fe1603abd7b7d074144",
+        "revCount": 8,
         "type": "git",
         "url": "https://github.com/michaelosbornegit/aut"
       },

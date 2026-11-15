@@ -26,6 +26,9 @@ in {
       gh
       esptool # for interacting with esp32 boards
       sox # audio recording for Claude Code's /voice mode
+      # The Desk Buddy window (agent count over Game of Life), run on demand.
+      # Just the package: deskbuddy.enable would also start the serial bridge.
+      inputs.aut.packages.${pkgs.stdenv.hostPlatform.system}.deskbuddy-emulator
       # apps
       # prusa-slicer
       # mongodb-compass

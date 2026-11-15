@@ -61,21 +61,13 @@
         source = "github";
         repo = "anthropics/claude-plugins-official";
       };
-      openai-codex.source = {
-        source = "github";
-        repo = "openai/codex-plugin-cc";
-      };
       local-mods.source = {
         source = "directory";
         path = "${dotfilesPath}/claude-mods";
       };
     };
     enabledPlugins = {
-      "typescript-lsp@claude-plugins-official" = true;
       "skill-creator@claude-plugins-official" = true;
-      "vercel@claude-plugins-official" = true;
-      "figma@claude-plugins-official" = true;
-      "codex@openai-codex" = true;
       "activity-indicator@local-mods" = true;
     };
   };

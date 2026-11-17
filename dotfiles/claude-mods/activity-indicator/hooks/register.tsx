@@ -1,7 +1,7 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register } from 'claude-code'
+import type { EngineInterface, Register, SessionContextUsage } from 'claude-code'
 
-import type { Phase } from '../types'
+import type { ContextFill, Phase } from '../types'
 
 const phase = atom({ plugin: 'activity-indicator', key: 'phase' } as const, 'idle' as Phase)
 const title = atom({ plugin: 'activity-indicator', key: 'title' } as const, null as string | null)
@@ -14,6 +14,13 @@ const title = atom({ plugin: 'activity-indicator', key: 'title' } as const, null
 // but the built-in security plugin (cc-plugin-sec-default) sends the classic
 // events past every installed plugin, so no `classic.*` hook here would run.
 const tasks = atom({ plugin: 'activity-indicator', key: 'tasks' } as const, [] as readonly string[])
+// The live context window's fill, as the status line reads it. Null until a
+// response of the live window reports one: a fresh session, or one just
+// compacted, until its next response.
+const context = atom({ plugin: 'activity-indicator', key: 'context' } as const, null as ContextFill | null)
+
+const fillOf = (c: SessionContextUsage): ContextFill | null =>
+  c.tokens === undefined || c.percent === undefined ? null : { tokens: c.tokens, window: c.window, percent: c.percent }
 
 // The id a call's result gives the work it moved to the background, if it
 // did. A persistent monitor runs until stopped, so it doesn't count.
@@ -92,15 +99,37 @@ const wrap = (s: string): string[] => {
 const xml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&apos;')
 
-// The name's lines on top, the status row under them. Without a title, a
-// single row of status.
+// The name's lines on top, the status row under them, and the context row
+// under that once there is a fill to show. Without a title, status leads.
 const ROW = 32
 const PAD = 10
 const LINE = 16
+const CTX_GAP = 19
 const lineCount = (t: string | null) => (t ? wrap(t).length : 0)
 // Where the status row's centre sits.
 const statusY = (t: string | null) => (t ? PAD + lineCount(t) * LINE + 12 : ROW / 2)
-const heightFor = (t: string | null) => (t ? statusY(t) + 17 : ROW)
+// Where the context row's centre sits.
+const contextY = (t: string | null) => statusY(t) + CTX_GAP
+const heightFor = (t: string | null, c: ContextFill | null) =>
+  c ? contextY(t) + 14 : t ? statusY(t) + 17 : ROW
+
+// 84k, 1M, 1.2M: the status line's short spelling of a token count.
+const tokensShort = (n: number) =>
+  n >= 1e6 ? `${+(n / 1e6).toFixed(n % 1e6 >= 5e4 ? 1 : 0)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`
+
+const contextLabel = (c: ContextFill) => `${c.percent}% context · ${tokensShort(c.tokens)} / ${tokensShort(c.window)}`
+
+// A short fixed-width meter, then the figures. Its fill turns amber past 70%
+// and red past 85%, when compaction is near.
+const METER_W = 56
+const contextRow = (c: ContextFill | null, cy: number, track: string, fill: string, ink: string) => {
+  if (!c) return ''
+  const p = Math.max(0, Math.min(100, c.percent))
+  const color = p >= 85 ? '#d6453d' : p >= 70 ? '#d98a1c' : fill
+  return `<rect x='14' y='${cy - 2.5}' width='${METER_W}' height='5' rx='2.5' fill='${track}'/>
+    <rect x='14' y='${cy - 2.5}' width='${Math.max(p > 0 ? 3 : 0, (METER_W * p) / 100)}' height='5' rx='2.5' fill='${color}'/>
+    <text x='${14 + METER_W + 9}' y='${cy + 4}' ${FONT} font-size='11.5' font-weight='400' letter-spacing='.3' fill='${ink}'>${xml(contextLabel(c))}</text>`
+}
 
 // Asked of the frame, which the slot caps at its own width. Without an explicit
 // width and height the sandboxed frame falls back to the browser's 300x150.
@@ -146,8 +175,8 @@ const orb = (id: string, cy: number, r: number, from: number, to: number, dur: n
 const frame = (h: number, body: string) =>
   `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='${h}' style='display:block'>${body}</svg>`
 
-const working = (t: string | null, label = 'Working') => {
-  const h = heightFor(t)
+const working = (t: string | null, c: ContextFill | null, label = 'Working') => {
+  const h = heightFor(t, c)
   const cy = statusY(t)
   return frame(h, `
   ${defs(h, `<linearGradient id='base' x1='0' x2='1'><stop offset='0' stop-color='#e4f5e6'/><stop offset='.5' stop-color='#d3efd8'/><stop offset='1' stop-color='#e2f3ee'/></linearGradient>
@@ -168,11 +197,12 @@ const working = (t: string | null, label = 'Working') => {
     ${bar(26, cy, [6, 16, 9, 12, 6], 0.3)}
     ${bar(32, cy, [14, 8, 15, 6, 14], 0.45)}
     <text x='44' y='${cy + 4.5}' ${FONT} font-size='12.5' font-weight='500' letter-spacing='.4' fill='#2f7a47'>${xml(label)}<tspan>.<animate attributeName='fill-opacity' values='0;1;1;0' keyTimes='0;.2;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan><tspan>.<animate attributeName='fill-opacity' values='0;0;1;1;0' keyTimes='0;.2;.4;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan><tspan>.<animate attributeName='fill-opacity' values='0;0;1;1;0' keyTimes='0;.4;.6;.8;1' dur='1.5s' repeatCount='indefinite'/></tspan></text>
+    ${contextRow(c, contextY(t), '#bfe3c8', '#2f9e55', '#2f7a47')}
   </g>`)
 }
 
-const idle = (t: string | null) => {
-  const h = heightFor(t)
+const idle = (t: string | null, c: ContextFill | null) => {
+  const h = heightFor(t, c)
   const cy = statusY(t)
   return frame(h, `
   ${defs(h, `<linearGradient id='base' x1='0' x2='1'><stop offset='0' stop-color='#fdf0f4'/><stop offset='.5' stop-color='#fbe4ec'/><stop offset='1' stop-color='#fdf0f4'/></linearGradient>`)}
@@ -187,6 +217,7 @@ const idle = (t: string | null) => {
       <animate attributeName='opacity' values='.7;0' dur='2.4s' repeatCount='indefinite'/>
     </circle>
     <text x='36' y='${cy + 4.5}' ${FONT} font-size='12.5' font-weight='500' letter-spacing='.4' fill='#b04a6f'>Ready for you</text>
+    ${contextRow(c, contextY(t), '#f3cdd9', '#d9476f', '#b04a6f')}
   </g>`)
 }
 
@@ -307,9 +338,35 @@ export const register: Register = on => {
     return next(e)
   })
 
-  // A /clear ends the conversation that owned the work's notifications.
+  // A /clear ends the conversation that owned the work's notifications, and
+  // the window it filled.
   on('session.end', async ($, e, next) => {
-    if (e.reason === 'clear') await update($, tasks, () => [])
+    if (e.reason === 'clear') {
+      await update($, tasks, () => [])
+      await update($, context, () => null)
+    }
+    return next(e)
+  })
+
+  // The window's fill as it stands when the session (or a reload of the mod)
+  // starts, so a resumed session shows it before its next turn ends. A host
+  // with no figure to give leaves the row off.
+  on('session.start', async ($, e, next) => {
+    const r = await next(e)
+    try {
+      const fill = fillOf((await $.session.usage()).context)
+      await update($, context, () => fill)
+    } catch {}
+    return r
+  })
+
+  // After each main-thread turn, and after a compaction empties the window,
+  // the engine pushes the new fill.
+  on('session.measure', async ($, e, next) => {
+    if (e.changed.includes('context')) {
+      const fill = fillOf(e.context)
+      await update($, context, () => fill)
+    }
     return next(e)
   })
 
@@ -319,15 +376,20 @@ export const register: Register = on => {
     const isWorking = isTurn || bg > 0
     const label = isTurn ? 'Working' : `${bg} running in background`
     const t = await read($, title)
+    const c = await read($, context)
     const { Box, Svg } = $.ui.resolve(e)
 
     return (
       <Box>
         <Svg
-          source={isWorking ? working(t, label) : idle(t)}
-          alt={(t ? t + ': ' : '') + (isTurn ? 'Claude is working' : isWorking ? label : 'Ready for you')}
+          source={isWorking ? working(t, c, label) : idle(t, c)}
+          alt={
+            (t ? t + ': ' : '') +
+            (isTurn ? 'Claude is working' : isWorking ? label : 'Ready for you') +
+            (c ? ` (${contextLabel(c)})` : '')
+          }
           width={FRAME_W}
-          height={heightFor(t)}
+          height={heightFor(t, c)}
           isInteractive
         />
       </Box>

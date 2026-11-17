@@ -42,6 +42,7 @@ const engine = async ($: any, on: any) => {
   on('prompt.submit', (_: any, e: any) => ({ text: e.text }))
   on('turn.start', (_: any, e: any) => ({ turnId: e.turnId }))
   on('turn.complete', () => ({ text: '' }))
+  on('session.measure', (_: any, e: any) => ({ changed: e.changed }))
   on('tool.call', (_: any, e: any) => {
     if (e.tool === 'Bash') return { result: { stdout: '', stderr: '', interrupted: false, backgroundTaskId: e.description } }
     if (e.tool === 'Agent') return { result: { status: 'async_launched', agentId: 'agent1', description: 'a', prompt: 'p', outputFile: '/o' } }
@@ -123,4 +124,28 @@ test('a new session picks up its title once the transcript holds one', async ($,
   await clock.advance(5000)
   await clock.advance(10)
   expect(await altOf($)).toBe('Parser speed: Claude is working')
+})
+
+test("the band shows the context window's fill once the engine measures one", async ($, on) => {
+  await engine($, on)
+  expect(await altOf($)).toBe('Ready for you')
+
+  await $.session.measure({ context: { tokens: 84_000, window: 200_000, percent: 42 }, rateLimits: [], changed: ['context'] } as any)
+  expect(await altOf($)).toBe('Ready for you (42% context · 84k / 200k)')
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'desktop' })
+  const svg: any = await ui.find({ type: 'Svg' })
+  await ui.unmount()
+  expect(svg.props.source).toContain('42% context · 84k / 200k')
+
+  // A compaction empties the window: no fill until its next response.
+  await $.session.measure({ context: { window: 200_000 }, rateLimits: [], changed: ['context'] } as any)
+  expect(await altOf($)).toBe('Ready for you')
+})
+
+test('a session that starts with a filled window shows it at once', async ($, on) => {
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.usage', () => ({ value: { startedAt: 0, context: { tokens: 1_200_000, window: 2_000_000, percent: 60 }, rateLimits: [] } }))
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  expect(await altOf($)).toBe('Ready for you (60% context · 1.2M / 2M)')
 })

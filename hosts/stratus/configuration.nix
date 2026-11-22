@@ -35,6 +35,13 @@
       enable = true;
       # libvirt NAT bridge: guests get DHCP and DNS from the host.
       trustedInterfaces = ["virbr0"];
+      # Dev servers reachable from the LAN on the wired interface only.
+      interfaces.enp4s0.allowedTCPPortRanges = [
+        {
+          from = 3200;
+          to = 3299;
+        }
+      ];
     };
   };
 

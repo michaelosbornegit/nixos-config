@@ -15,6 +15,8 @@
     {app = "/Applications/ChatGPT.app";}
     {app = "/Applications/Claude.app";}
     {app = "/Applications/Spotify.app";}
+    {app = "/Applications/Discord.app";}
+    {app = "/Applications/Ghostty.app";}
   ];
 
   # Personal-only apps, on top of the shared casks in darwin-common/homebrew.nix

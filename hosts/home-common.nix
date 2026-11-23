@@ -28,6 +28,7 @@
     "pr-watcher"
     "sim-debug"
     "spawn-claude-subagent"
+    "status-sweep"
     "todo"
   ];
   skillLinks = dir:

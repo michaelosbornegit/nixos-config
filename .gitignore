@@ -12,6 +12,7 @@ dotfiles/skills/*
 !dotfiles/skills/pr-watcher/
 !dotfiles/skills/sim-debug/
 !dotfiles/skills/spawn-claude-subagent/
+!dotfiles/skills/status-sweep/
 !dotfiles/skills/todo/
 
 # Stray generated pages at the repo root

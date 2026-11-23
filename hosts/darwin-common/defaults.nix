@@ -14,8 +14,13 @@
       "com.apple.swipescrolldirection" = false;
     };
 
-    # No dedicated nix-darwin option for this one.
-    CustomUserPreferences.NSGlobalDomain.AppleMiniaturizeOnDoubleClick = false;
+    # No dedicated nix-darwin options for these.
+    CustomUserPreferences.NSGlobalDomain = {
+      AppleMiniaturizeOnDoubleClick = false;
+      # Appearance > Liquid Glass: Tinted.
+      NSGlassTintAmount = 1;
+      NSGlassBuddyTintAmount = 0.5;
+    };
 
     dock = {
       autohide = true;

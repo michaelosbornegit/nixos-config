@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>keybinds</key>
+	<array>
+		<string>{"direction":"BottomLeftQuarter","id":"1674D661-F762-4FF6-B983-C8967BAB5DFB","keybind":[125,123]}</string>
+		<string>{"direction":"BottomRightQuarter","id":"93FCC34D-D337-4C1D-8803-D1DD19B5F377","keybind":[124,125]}</string>
+		<string>{"cycle":[{"direction":"BottomHalf","id":"2F3FADDA-0D97-4A03-AD7D-8BB4A4B4B174","keybind":[]},{"direction":"BottomThird","id":"99B7E95B-20DE-4EBB-AA84-CFFFF1B7A5CF","keybind":[]},{"direction":"BottomTwoThirds","id":"041DB630-A2E8-4700-927E-87C535CDF980","keybind":[]}],"direction":"Cycle","id":"A13A5B97-A916-4D76-8156-5E90256B2184","keybind":[125],"name":"Bottom Cycle"}</string>
+		<string>{"cycle":[{"direction":"LeftHalf","id":"3969CDE8-6011-474D-81E5-566B3D977C72","keybind":[]},{"direction":"PreviousScreen","id":"060229C3-B31C-4E75-BD24-41C08C9F7699","keybind":[]}],"direction":"Cycle","id":"79A01473-891B-44AF-8E8C-CB5F26C82A78","keybind":[123],"name":"Left Cycle"}</string>
+		<string>{"cycle":[{"direction":"NextScreen","id":"F1241E51-AC5C-462E-AFAD-0924CF3CDF69","keybind":[]},{"direction":"RightHalf","id":"7F647640-884E-44D8-99B8-3FAF9DFAF1B9","keybind":[]}],"direction":"Cycle","id":"B4D1CDA3-393E-4C20-9670-111E48CDBEAB","keybind":[124],"name":"Right Cycle"}</string>
+		<string>{"direction":"Maximize","id":"6EB83948-74DA-4858-822D-B65FD678A767","keybind":[36]}</string>
+		<string>{"direction":"Maximize","id":"81603987-5654-4CCF-9027-36B95E50DC25","keybind":[49]}</string>
+		<string>{"cycle":[{"direction":"TopHalf","id":"2534BAEF-9667-4A1C-BFC8-1D396D166BFE","keybind":[]},{"direction":"TopThird","id":"FC6BBC52-86AE-4A19-8858-1520D7ECD809","keybind":[]},{"direction":"TopTwoThirds","id":"E4B0D92B-ED57-435A-8D3B-D9B204F69E0F","keybind":[]}],"direction":"Maximize","id":"94C781FF-1F83-4C9B-80AF-BC5FC4639465","keybind":[126],"name":"Top Cycle"}</string>
+		<string>{"direction":"TopLeftQuarter","id":"6D13F6AF-AB58-4966-AF32-42B463464043","keybind":[123,126]}</string>
+		<string>{"direction":"TopRightQuarter","id":"917F980F-80B3-4751-8CC3-BEB3728E099D","keybind":[124,126]}</string>
+	</array>
+	<key>patchesApplied</key>
+	<integer>3</integer>
+	<key>trigger</key>
+	<array>
+		<integer>58</integer>
+		<integer>59</integer>
+	</array>
+</dict>
+</plist>

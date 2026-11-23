@@ -5,3 +5,6 @@ keybind = ctrl+shift+equal=equalize_splits
 keybind = ctrl+d=new_split:right
 keybind = ctrl+shift+d=new_split:down
 keybind = ctrl+w=close_surface
+
+# macOS: the app comes from Homebrew and updates itself (ignored on Linux).
+auto-update = download

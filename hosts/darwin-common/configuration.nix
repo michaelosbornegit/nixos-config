@@ -30,6 +30,7 @@
             ./home.nix
             ./tam.nix
             ./osupgrade.nix
+            ./keyboard.nix
           ];
         };
       };

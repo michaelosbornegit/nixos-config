@@ -21,14 +21,7 @@
       autohide = true;
       tilesize = 47;
       mineffect = "scale";
-      persistent-apps = [
-        {app = "/Applications/Firefox.app";}
-        {app = "/Applications/Slack.app";}
-        {app = "/Applications/ChatGPT.app";}
-        {app = "/Applications/Claude.app";}
-        {app = "/Applications/Granola.app";}
-        {app = "/Applications/Spotify.app";}
-      ];
+      # persistent-apps is set per Mac, in each host's configuration.nix.
     };
 
     finder.FXPreferredViewStyle = "Nlsv"; # list view

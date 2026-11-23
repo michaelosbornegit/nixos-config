@@ -201,10 +201,8 @@ in {
         # a private repo and the root rebuild has no git credentials. Offline,
         # the rebuild still goes ahead with what's already in the store. Flatpak
         # apps (Sober, gopher64) sit outside Nix, so they're updated here too.
-        osupgrade =
-          if pkgs.stdenv.hostPlatform.isDarwin
-          then "(cd ~/development/repos/nixos-config && (nix flake archive --no-update-lock-file >/dev/null || true) && sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#$(scutil --get LocalHostName))"
-          else "(cd ~/development/repos/nixos-config && (nix flake archive --no-update-lock-file >/dev/null || true) && sudo nixos-rebuild switch --flake .#$(hostname) && { ! command -v flatpak >/dev/null || flatpak update -y; })";
+        # Macs get a script instead (darwin-common/osupgrade.nix).
+        osupgrade = lib.mkIf (!pkgs.stdenv.hostPlatform.isDarwin) "(cd ~/development/repos/nixos-config && (nix flake archive --no-update-lock-file >/dev/null || true) && sudo nixos-rebuild switch --flake .#$(hostname) && { ! command -v flatpak >/dev/null || flatpak update -y; })";
         osclean = "sudo nix-collect-garbage -d && nix-collect-garbage -d";
         osoptimize = "sudo nix-store --optimize";
       };

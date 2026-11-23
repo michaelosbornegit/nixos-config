@@ -1,8 +1,9 @@
-# Shared by every Mac. Each host's configuration.nix imports this, sets its
+# Shared by every Mac. Each host's configuration.nix imports this, may set its
 # names, and adds its own home-manager modules.
 {
   inputs,
   user,
+  flakeHost,
   stateVersion,
   homeStateVersion,
   ...
@@ -20,7 +21,7 @@
         useUserPackages = true;
         backupFileExtension = "hm-bak";
         extraSpecialArgs = {
-          inherit inputs user;
+          inherit inputs user flakeHost;
           stateVersion = homeStateVersion;
         };
         users.${user} = {
@@ -28,6 +29,7 @@
             ../home-common.nix
             ./home.nix
             ./tam.nix
+            ./osupgrade.nix
           ];
         };
       };

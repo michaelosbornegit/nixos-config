@@ -98,6 +98,7 @@
       mackerel = nix-darwin.lib.darwinSystem {
         specialArgs = {
           inherit inputs;
+          flakeHost = "mackerel";
           user = "mosborne";
           stateVersion = 6;
           homeStateVersion = "25.05";
@@ -110,6 +111,7 @@
       fractus = nix-darwin.lib.darwinSystem {
         specialArgs = {
           inherit inputs;
+          flakeHost = "fractus";
           user = "fractus";
           stateVersion = 6;
           homeStateVersion = "26.05";

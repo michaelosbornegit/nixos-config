@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   lib,
   user,
@@ -17,7 +18,6 @@
     "ghostty"
     "google-gemini"
     "loop"
-    "notion"
     "postman"
     "raycast"
     "spotify"
@@ -29,7 +29,8 @@
   in
     builtins.pathExists file
     && builtins.match ".*\n[[:space:]]*auto_updates true\n.*" (builtins.readFile file) != null;
-  notSelfUpdating = lib.filter (name: !selfUpdates name) casks;
+  # Checks every cask, including ones a single Mac adds in its own config.
+  notSelfUpdating = lib.filter (name: !selfUpdates name) (map (c: c.name) config.homebrew.casks);
 in {
   imports = [inputs.nix-homebrew.darwinModules.nix-homebrew];
 

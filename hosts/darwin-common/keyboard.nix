@@ -21,11 +21,11 @@
   };
 
   # MacBook built-in keyboard: fn is Command, Command is Control, Control is
-  # Option.
+  # fn (so the row still has an fn/Globe key).
   builtIn = with key; [
     [fnBuiltIn leftCommand]
     [leftCommand leftControl]
-    [leftControl leftOption]
+    [leftControl fnBuiltIn]
     [rightCommand rightControl]
     [rightControl rightOption]
     [fn rightCommand]

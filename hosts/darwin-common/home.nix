@@ -22,6 +22,31 @@
       run /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
     '';
 
+    # Light mode everywhere: macOS marks Dark by setting AppleInterfaceStyle, so
+    # Light means removing it. Takes effect at the next login.
+    lightMode = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      run /usr/bin/defaults delete -g AppleInterfaceStyle 2>/dev/null || true
+    '';
+
+    # Terminal.app: the Basic profile (the default) in MesloLGS NF 11pt, the
+    # Nerd Font installed by fonts.packages. The font is an archived NSFont, so
+    # it's kept as base64; to change it, set it in Terminal and re-export with
+    # `defaults export com.apple.Terminal -` (Window Settings > Basic > Font).
+    # -dict-add replaces only the Basic profile; the other stock profiles stay.
+    terminalProfile = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      run /usr/bin/defaults write com.apple.Terminal "Window Settings" -dict-add Basic \
+        '<dict>
+          <key>Font</key><data>YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGkCwwVFlUkbnVsbNQNDg8QERITFFZOU1NpemVYTlNmRmxhZ3NWTlNOYW1lViRjbGFzcyNAJgAAAAAAABAQgAKAA18QE01lc2xvTEdTLU5GLVJlZ3VsYXLSFxgZGlokY2xhc3NuYW1lWCRjbGFzc2VzVk5TRm9udKIZG1hOU09iamVjdAgRGiQpMjdJTFFTWF5nbnd+hY6QkpSqr7rDys0AAAAAAAABAQAAAAAAAAAcAAAAAAAAAAAAAAAAAAAA1g==</data>
+          <key>FontAntialias</key><true/>
+          <key>FontWidthSpacing</key><real>1.004032258064516</real>
+          <key>ProfileCurrentVersion</key><real>2.09</real>
+          <key>name</key><string>Basic</string>
+          <key>type</key><string>Window Settings</string>
+        </dict>'
+      run /usr/bin/defaults write com.apple.Terminal "Default Window Settings" -string Basic
+      run /usr/bin/defaults write com.apple.Terminal "Startup Window Settings" -string Basic
+    '';
+
     # Seed Loop's trigger key and window shortcuts on a Mac that has none yet.
     # Only once: later changes made in Loop's settings aren't overwritten. To
     # save new shortcuts back to the repo, re-export with the command in

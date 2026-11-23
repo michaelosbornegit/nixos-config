@@ -12,6 +12,9 @@
       KeyRepeat = 12;
       # Natural scrolling off.
       "com.apple.swipescrolldirection" = false;
+      # Light mode, never switching automatically (Light itself is set in
+      # darwin-common/home.nix: this option can only turn Dark on).
+      AppleInterfaceStyleSwitchesAutomatically = false;
     };
 
     # No dedicated nix-darwin options for these.

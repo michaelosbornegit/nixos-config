@@ -1,3 +1,5 @@
+# Shared by every Mac. Each host's configuration.nix imports this, sets its
+# names, and adds its own home-manager modules.
 {
   inputs,
   user,
@@ -24,8 +26,6 @@
           imports = [
             ../home-common.nix
             ./home.nix
-            ./vercel-ai-gateway.nix
-            ./vercel-ai-gateway-toggle.nix
             ./tam.nix
           ];
         };

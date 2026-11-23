@@ -86,7 +86,8 @@
     };
 
     darwinConfigurations = {
-      darwin = nix-darwin.lib.darwinSystem {
+      # work MacBook
+      mackerel = nix-darwin.lib.darwinSystem {
         specialArgs = {
           inherit inputs;
           user = "mosborne";
@@ -94,7 +95,19 @@
           homeStateVersion = "25.05";
         };
         modules = [
-          ./hosts/darwin/configuration.nix
+          ./hosts/mackerel/configuration.nix
+        ];
+      };
+      # personal MacBook
+      fractus = nix-darwin.lib.darwinSystem {
+        specialArgs = {
+          inherit inputs;
+          user = "fractus";
+          stateVersion = 6;
+          homeStateVersion = "26.05";
+        };
+        modules = [
+          ./hosts/fractus/configuration.nix
         ];
       };
     };

@@ -112,7 +112,7 @@
         specialArgs = {
           inherit inputs;
           flakeHost = "fractus";
-          user = "fractus";
+          user = "resonatortune";
           stateVersion = 6;
           homeStateVersion = "26.05";
         };

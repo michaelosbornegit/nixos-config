@@ -61,5 +61,11 @@ in {
       cleanup = "uninstall";
     };
     inherit casks;
+    # Mac App Store apps (installed with `mas`; the App Store keeps them
+    # updated). Needs an App Store sign-in, and the app in that Apple ID's
+    # purchases. cleanup doesn't remove these when they leave the list.
+    masApps = {
+      Amphetamine = 937984704;
+    };
   };
 }

@@ -20,17 +20,23 @@
     fnBuiltIn = 280379760050179; # 0xFF0100000003, MacBook fn/Globe
   };
 
+  # MacBook built-in keyboard: fn is Command, Command is Control, Control is
+  # Option.
+  builtIn = with key; [
+    [fnBuiltIn leftCommand]
+    [leftCommand leftControl]
+    [leftControl leftOption]
+    [rightCommand rightControl]
+    [rightControl rightOption]
+    [fn rightCommand]
+  ];
+
   keyboards = {
-    # MacBook built-in keyboard: fn is Command, Command is Control, Control is
-    # Option.
-    "0-0-0" = with key; [
-      [fnBuiltIn leftCommand]
-      [leftCommand leftControl]
-      [leftControl leftOption]
-      [rightCommand rightControl]
-      [rightControl rightOption]
-      [fn rightCommand]
-    ];
+    # Built-in keyboards report different IDs by model, so each one is listed.
+    # Find a Mac's with: hidutil list --matching '{"PrimaryUsagePage":1,"PrimaryUsage":6}'
+    # (VendorID and ProductID columns, in hex; the key uses them in decimal).
+    "0-0-0" = builtIn; # mackerel
+    "1452-835-0" = builtIn; # fractus, the original M1 (0x5ac-0x343)
 
     # Logitech keyboard (1133 = Logitech): Command and Control swapped.
     "1133-45943-0" = with key; [

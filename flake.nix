@@ -44,6 +44,14 @@
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Installs and manages Homebrew itself, so casks need no manual brew install.
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    # Cask definitions, read at eval time to check every cask self-updates.
+    homebrew-cask = {
+      url = "github:homebrew/homebrew-cask";
+      flake = false;
+    };
   };
 
   outputs = {

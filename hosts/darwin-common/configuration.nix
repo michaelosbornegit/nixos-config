@@ -10,6 +10,7 @@
   imports = [
     ../common.nix
     ./defaults.nix
+    ./homebrew.nix
     inputs.home-manager.darwinModules.home-manager
     {
       home-manager = {

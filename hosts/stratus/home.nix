@@ -146,6 +146,11 @@ in {
       always-normal = true;
     };
 
+    # GNOME turns the screen back on for every notification that shows on the
+    # lock screen, so overnight agent runs kept waking the monitor. Keep
+    # notifications off the lock screen; they still collect in the tray.
+    "org/gnome/desktop/notifications".show-in-lock-screen = false;
+
     "org/gnome/desktop/interface" = {
       enable-animations = true;
       icon-theme = "Papirus";

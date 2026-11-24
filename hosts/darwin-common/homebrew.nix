@@ -17,7 +17,10 @@
     "firefox"
     "ghostty"
     "google-gemini"
+    # Local LLMs: LM Studio (chat GUI) and Ollama (background server + CLI).
+    "lm-studio"
     "loop"
+    "ollama-app"
     "postman"
     "raycast"
     "spotify"

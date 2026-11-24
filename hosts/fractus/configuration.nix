@@ -23,9 +23,6 @@
   # (same rule: self-updating casks only).
   homebrew.casks = [
     "discord"
-    # Local LLMs: LM Studio (chat GUI) and Ollama (background server + CLI).
-    "lm-studio"
-    "ollama-app"
     "prismlauncher"
     "steam"
   ];

@@ -21,7 +21,11 @@
 
   # Personal-only apps, on top of the shared casks in darwin-common/homebrew.nix
   # (same rule: self-updating casks only).
-  homebrew.casks = ["discord"];
+  homebrew.casks = [
+    "discord"
+    "prismlauncher"
+    "steam"
+  ];
 
   home-manager.users.${user}.imports = [./home.nix];
 }

@@ -66,7 +66,9 @@ in {
     inherit casks;
     # Mac App Store apps (installed with `mas`; the App Store keeps them
     # updated). Needs an App Store sign-in, and the app in that Apple ID's
-    # purchases. cleanup doesn't remove these when they leave the list.
+    # purchases. This is an allowlist: with cleanup on, every rebuild
+    # uninstalls any App Store app not listed here (Pages, Keynote, apps
+    # installed by hand). Add a Mac-only one in that Mac's configuration.nix.
     masApps = {
       Amphetamine = 937984704;
     };

@@ -16,6 +16,7 @@ in {
     }
     ./lazy-apps.nix
     ./roblox.nix
+    ./agent-runner.nix
   ];
 
   home = {
